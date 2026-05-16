@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>修理報告プリセット支援ツール</title>
+<style>
+:root{
+  --red:#ef0018;
+  --red-dark:#c90015;
+  --pink:#f7a1b2;
+  --pink-soft:#fff1f4;
+  --ink:#242424;
+  --muted:#6d6d6d;
+  --line:#d8d8d8;
+  --field:#f1f1f3;
+  --panel:#ffffff;
+  --bg:#f6f7f9;
+  --black:#151515;
+  --blue:#1769e0;
+  --orange:#f08a1f;
+  --green:#178a52;
+  --shadow:0 18px 50px rgba(24,24,24,.16);
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{
+  min-height:100%;
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  letter-spacing:0;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app-shell{min-height:100vh;padding-bottom:86px}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:var(--red);
+  color:#fff;
+  box-shadow:0 2px 0 rgba(0,0,0,.08);
+}
+.statusline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px 0;
+  font-size:13px;
+  opacity:.92;
+}
+.hero{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:12px 16px 16px;
+}
+.title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+.back{font-size:34px;line-height:1;color:#fff;opacity:.7}
+h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
+.subtitle{margin-top:3px;font-size:12px;opacity:.82}
+.hero-actions{display:grid;grid-template-columns:repeat(2,minmax(122px,1fr));gap:8px;min-width:270px}
+.pill{
+  border:0;
+  border-radius:999px;
+  padding:9px 14px;
+  background:var(--black);
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+  min-height:38px;
+}
+.pill.red{background:#fff;color:var(--red)}
+.casebar{
+  max-width:1180px;
+  margin:0 auto;
+  padding:18px 18px 12px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:18px;
+  align-items:center;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.case-title{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:18px}
+.case-title strong{font-weight:800}
+.manager{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.action{
+  border:0;
+  border-radius:8px;
+  min-height:42px;
+  padding:10px 14px;
+  background:#333;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+}
+.action.primary{background:var(--red)}
+.action.light{background:#f0f1f3;color:#222}
+.action.warn{background:#fff4e6;color:#9b4c00;border:1px solid #ffd6a3}
+.action.danger{background:#fff0f2;color:var(--red-dark);border:1px solid #ffc4cc}
+.invoice-strip{
+  max-width:1180px;
+  margin:0 auto;
+  padding:20px 18px 28px;
+  display:flex;
+  gap:14px;
+  background:#fff;
+  overflow:auto;
+}
+.invoice-card{
+  position:relative;
+  min-width:150px;
+  padding:12px 18px;
+  border:5px solid #ffd0db;
+  background:#fff;
+  text-align:center;
+  font-weight:800;
+}
+.invoice-card span{display:block;color:var(--red);font-size:13px;margin-bottom:7px}
+.invoice-card.active:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-22px;
+  width:28px;
+  height:28px;
+  transform:translateX(-50%) rotate(45deg);
+  border-right:5px solid #ffd0db;
+  border-bottom:5px solid #ffd0db;
+  background:#fff;
+}
+.invoice-add{min-width:150px;border:5px solid #eee;background:#fff;color:#aaa;font-size:18px;font-weight:800}
+.tabs{
+  position:sticky;
+  top:98px;
+  z-index:20;
+  max-width:1180px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(120px,1fr));
+  gap:6px;
+  background:#fff;
+  border-bottom:4px solid var(--red);
+  overflow:auto;
+}
+.tab{
+  border:0;
+  border-radius:10px 10px 0 0;
+  background:#ef91a5;
+  color:#fff;
+  min-height:58px;
+  padding:12px 10px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.tab.active{background:var(--red)}
+.workspace{
+  max-width:1180px;
+  margin:0 auto;
+  background:#fff;
+  border-left:5px solid #ffd2dc;
+  border-right:5px solid #ffd2dc;
+}
+.tab-panel{display:none;padding:22px 40px 36px}
+.tab-panel.active{display:block}
+.section-title{
+  margin:0 0 18px;
+  color:var(--red);
+  font-size:16px;
+  font-weight:900;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.field-row{
+  display:grid;
+  grid-template-columns:190px minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  min-height:62px;
+  border-bottom:1px solid var(--line);
+  padding:8px 0;
+}
+.field-row.full{grid-column:1/-1}
+.field-row.wide-label{grid-template-columns:250px minmax(0,1fr) auto}
+.field-row.no-line{border-bottom:0}
+label{
+  color:var(--muted);
+  font-weight:800;
+  line-height:1.35;
+}
+.required:after{content:" *";color:var(--red)}
+input,select,textarea{
+  width:100%;
+  border:0;
+  border-radius:8px;
+  background:var(--field);
+  color:#1f1f1f;
+  min-height:46px;
+  padding:10px 14px;
+  outline:2px solid transparent;
+  transition:outline-color .15s,background .15s,box-shadow .15s;
+}
+textarea{min-height:110px;resize:vertical;line-height:1.55}
+input:focus,select:focus,textarea:focus{
+  background:#fff;
+  outline-color:#ffb6c2;
+  box-shadow:0 0 0 4px rgba(239,0,24,.08);
+}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.copy-btn{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:999px;
+  background:#1e1e1e;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+.copy-btn:hover,.pill:hover,.action:hover{filter:brightness(.96)}
+.ghost-copy{visibility:hidden}
+.table-wrap{overflow:auto;border:1px solid var(--line);background:#fff}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{background:#9b9b9b;color:#fff;text-align:center;padding:14px;font-weight:900}
+td{border:1px solid var(--line);padding:10px 12px;vertical-align:middle}
+td:first-child{font-weight:900}
+td.number{text-align:right}
+.money-input{text-align:right}
+.parts-empty{
+  height:210px;
+  display:grid;
+  place-items:center;
+  color:#aaa;
+  border:1px solid var(--line);
+  border-top:0;
+  font-weight:800;
+}
+.parts-actions{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  margin:22px 0;
+}
+.parts-actions h2{margin:0;text-align:center;font-size:18px}
+.bottom-bar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:35;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:70px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);
+}
+.bottom-bar button{
+  border:0;
+  color:#fff;
+  font-weight:800;
+  font-size:16px;
+}
+.bottom-bar .draft{background:#3b3b3b}
+.bottom-bar .send{background:#cfcfcf;color:#fff}
+.overlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  background:rgba(0,0,0,.48);
+  z-index:70;
+}
+.modal{
+  position:fixed;
+  left:50%;
+  top:50%;
+  width:min(880px,94vw);
+  max-height:88vh;
+  display:none;
+  transform:translate(-50%,-50%);
+  z-index:80;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  padding:20px 22px;
+  border-bottom:1px solid var(--line);
+}
+.modal-head h2{margin:0;font-size:20px}
+.modal-head p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.modal-body{padding:18px 22px 22px;overflow:auto;max-height:calc(88vh - 84px)}
+.preset-tools{
+  display:grid;
+  grid-template-columns:1.2fr auto auto;
+  gap:10px;
+  margin-bottom:14px;
+}
+.backup-row,.search-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  margin-bottom:16px;
+}
+.sync-panel{
+  border:1px solid #dbe2ea;
+  background:#f8fafc;
+  border-radius:12px;
+  padding:14px;
+  margin:0 0 16px;
+}
+.sync-panel h3{margin:0 0 6px;font-size:15px}
+.sync-panel p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.55}
+.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sync-grid textarea{grid-column:1/-1;min-height:86px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+.sync-actions{display:flex;gap:10px;flex-wrap:wrap}
+.sync-state{font-size:12px;color:var(--muted);font-weight:800;margin-top:10px}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:14px;
+}
+.badge.ok{background:#e8f6ef;color:#126f42;border:1px solid #b7e3cb}
+.badge.ng{background:#fff3e2;color:#a35b00;border:1px solid #ffd3a0}
+.preset-list{display:grid;gap:10px}
+.preset-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto auto;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  background:#fbfbfc;
+}
+.preset-name{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preset-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.empty{
+  text-align:center;
+  color:#9b9b9b;
+  padding:34px 10px;
+  border:1px dashed #ccc;
+  border-radius:10px;
+}
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:88px;
+  transform:translateX(-50%) translateY(10px);
+  z-index:100;
+  background:#181818;
+  color:#fff;
+  border-radius:9px;
+  padding:12px 18px;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s,transform .18s;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.confirm{
+  position:fixed;
+  left:50%;
+  top:50%;
+  width:min(360px,88vw);
+  display:none;
+  transform:translate(-50%,-50%);
+  z-index:120;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  text-align:center;
+}
+.confirm p{margin:0 0 18px;line-height:1.65;font-weight:800}
+.confirm-actions{display:flex;gap:10px}
+.confirm-actions button{flex:1}
+#fileInput{display:none}
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .hero-actions{min-width:0}
+  .casebar{grid-template-columns:1fr}
+  .manager{justify-content:stretch}
+  .manager .action{flex:1}
+  .tabs{top:122px;grid-template-columns:repeat(5,minmax(96px,1fr))}
+  .workspace{border-left:0;border-right:0}
+  .tab-panel{padding:16px}
+  .form-grid{grid-template-columns:1fr}
+  .field-row,.field-row.wide-label{grid-template-columns:118px minmax(0,1fr) auto}
+  .preset-tools,.backup-row,.search-row{grid-template-columns:1fr}
+  .sync-grid{grid-template-columns:1fr}
+  .preset-item{grid-template-columns:1fr 1fr 1fr}
+  .preset-info{grid-column:1/-1}
+}
+@media (max-width:520px){
+  .statusline{font-size:11px}
+  h1{font-size:18px}
+  .hero-actions{grid-template-columns:1fr 1fr}
+  .pill{font-size:11px;padding:8px}
+  .case-title{font-size:15px;gap:10px}
+  .invoice-strip{padding:14px 12px 22px}
+  .tab{min-height:50px;font-size:13px}
+  .field-row,.field-row.wide-label{
+    grid-template-columns:1fr auto;
+    gap:8px;
+    padding:12px 0;
+  }
+  .field-row label{grid-column:1/-1}
+  .field-row input,.field-row select,.field-row textarea,.field-row .mini-grid{grid-column:1/2}
+  .copy-btn{grid-column:2/3;grid-row:2/3}
+  .ghost-copy{display:none}
+  .bottom-bar{min-height:64px}
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="statusline">
+      <div>Field Service Preset</div>
+      <div id="clock">--:--</div>
+    </div>
+    <div class="hero">
+      <div class="title-wrap">
+        <div class="back">‹</div>
+        <div>
+          <h1>完了報告 入力プリセット</h1>
+          <div class="subtitle">定型入力を保存して、必要なフォームへ一括反映します</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="pill" data-copy-summary>入力サマリコピー</button>
+        <button class="pill" data-copy-active>表示タブコピー</button>
+        <button class="pill" id="btnExportQuick">JSON書出</button>
+        <button class="pill red" id="btnOpenModalTop">プリセット</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="casebar">
+    <div class="case-title">
+      <span>No.<strong id="caseNo">W00664</strong></span>
+      <span><strong id="caseCustomer">富永 美保</strong>様</span>
+      <span id="draftState">未保存の変更なし</span>
+    </div>
+    <div class="manager">
+      <button class="action primary" id="btnOpenModal">プリセット保存・読込</button>
+      <button class="action light" id="btnFillSample">サンプル入力</button>
+      <button class="action danger" id="btnClear">全クリア</button>
+    </div>
+  </section>
+
+  <section class="invoice-strip">
+    <div class="invoice-card active"><span>請求先 1</span>無償</div>
+    <button class="invoice-add" type="button">+ 請求先追加</button>
+  </section>
+
+  <nav class="tabs" aria-label="フォームタブ">
+    <button class="tab active" data-tab="main">主要事項</button>
+    <button class="tab" data-tab="product">製品情報</button>
+    <button class="tab" data-tab="report">作業報告</button>
+    <button class="tab" data-tab="parts">交換部品</button>
+    <button class="tab" data-tab="bill">請求 / 支払</button>
+  </nav>
+
+  <main class="workspace">
+    <section class="tab-panel active" id="panel-main" data-title="主要事項">
+      <div class="form-grid">
+        <div class="field-row full">
+          <label for="doneAt">完了日</label>
+          <input type="text" id="doneAt" data-label="完了日" placeholder="2026/05/14 18:28">
+          <button class="copy-btn" data-copy="doneAt" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="customerName">お客様名</label>
+          <input type="text" id="customerName" data-label="お客様名" placeholder="富永　美保">
+          <button class="copy-btn" data-copy="customerName" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="model">型式</label>
+          <input type="text" id="model" data-label="型式" placeholder="BDSTX120HR">
+          <button class="copy-btn" data-copy="model" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="serial">製造番号</label>
+          <input type="text" id="serial" data-label="製造番号" placeholder="2501456">
+          <button class="copy-btn" data-copy="serial" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="color">製品色</label>
+          <input type="text" id="color" data-label="製品色">
+          <button class="copy-btn" data-copy="color" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="factory">工場名称</label>
+          <select id="factory" data-label="工場名称">
+            <option value=""></option>
+            <option>320：（電化）</option>
+            <option>330：（空調）</option>
+            <option>340：（住設）</option>
+          </select>
+          <button class="copy-btn" data-copy="factory" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="faultCode">事故処置コード</label>
+          <input type="text" id="faultCode" data-label="事故処置コード" placeholder="2HF">
+          <button class="copy-btn" data-copy="faultCode" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="deliveryType">納品区分</label>
+          <select id="deliveryType" data-label="納品区分">
+            <option value=""></option>
+            <option>通常</option>
+            <option>直送</option>
+            <option>持参</option>
+          </select>
+          <button class="copy-btn" data-copy="deliveryType" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="repairSales">保守・据付区分</label>
+          <select id="repairSales" data-label="保守・据付区分">
+            <option value=""></option>
+            <option>修理売上</option>
+            <option>据付売上</option>
+            <option>点検</option>
+          </select>
+          <button class="copy-btn" data-copy="repairSales" title="コピー">CP</button>
+        </div>
+        <div class="field-row full wide-label">
+          <label for="internalNote">内部連絡事項</label>
+          <textarea id="internalNote" data-label="内部連絡事項" placeholder="連絡事項、メール、受信日時など"></textarea>
+          <button class="copy-btn" data-copy="internalNote" title="コピー">CP</button>
+        </div>
+        <div class="field-row full wide-label">
+          <label for="serviceNote">サービス注意事項</label>
+          <textarea id="serviceNote" data-label="サービス注意事項"></textarea>
+          <button class="copy-btn" data-copy="serviceNote" title="コピー">CP</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-product" data-title="製品情報">
+      <div class="form-grid">
+        <div class="field-row">
+          <label for="productModel">型式</label>
+          <input type="text" id="productModel" data-label="型式">
+          <button class="copy-btn" data-copy="productModel" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="productName">商品名</label>
+          <input type="text" id="productName" data-label="商品名" placeholder="全自洗">
+          <button class="copy-btn" data-copy="productName" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="purchaseDate">購入年月</label>
+          <input type="text" id="purchaseDate" data-label="購入年月" placeholder="YYYY/MM">
+          <button class="copy-btn" data-copy="purchaseDate" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="startDate">製造開始年月</label>
+          <input type="text" id="startDate" data-label="製造開始年月" placeholder="2022/08">
+          <button class="copy-btn" data-copy="startDate" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="endDate">製造終了年月</label>
+          <input type="text" id="endDate" data-label="製造終了年月" placeholder="2023/10">
+          <button class="copy-btn" data-copy="endDate" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="partsWarranty">部品保有期間</label>
+          <input type="text" id="partsWarranty" data-label="部品保有期間" placeholder="2029/10">
+          <button class="copy-btn" data-copy="partsWarranty" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="prevRepair1">前回修理年月</label>
+          <input type="text" id="prevRepair1" data-label="前回修理年月">
+          <button class="copy-btn" data-copy="prevRepair1" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="prevSymptom1">現象名</label>
+          <input type="text" id="prevSymptom1" data-label="前回現象名">
+          <button class="copy-btn" data-copy="prevSymptom1" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="extendedWarranty">延長保証</label>
+          <select id="extendedWarranty" data-label="延長保証">
+            <option value=""></option>
+            <option>なし</option>
+            <option>あり</option>
+            <option>確認要</option>
+          </select>
+          <button class="copy-btn" data-copy="extendedWarranty" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="extendedWarrantyNo">延長保証No</label>
+          <input type="text" id="extendedWarrantyNo" data-label="延長保証No">
+          <button class="copy-btn" data-copy="extendedWarrantyNo" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="limitAmount">限度額</label>
+          <input type="number" id="limitAmount" data-label="限度額" value="0">
+          <button class="copy-btn" data-copy="limitAmount" title="コピー">CP</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-report" data-title="作業報告">
+      <h2 class="section-title">請求先 1</h2>
+      <div class="form-grid">
+        <div class="field-row full">
+          <label for="symptom" class="required">現象名</label>
+          <div class="mini-grid">
+            <input type="text" id="symptomCode" data-label="現象名コード" placeholder="コード">
+            <input type="text" id="symptom" data-label="現象名">
+          </div>
+          <button class="copy-btn" data-copy="symptom" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="frequency" class="required">現象頻度</label>
+          <select id="frequency" data-label="現象頻度">
+            <option value=""></option>
+            <option>常時</option>
+            <option>時々</option>
+            <option>再現せず</option>
+          </select>
+          <button class="copy-btn" data-copy="frequency" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="repairCategory" class="required">修理内容区分</label>
+          <select id="repairCategory" data-label="修理内容区分">
+            <option value=""></option>
+            <option>部品交換</option>
+            <option>調整</option>
+            <option>清掃</option>
+            <option>説明</option>
+            <option>点検</option>
+          </select>
+          <button class="copy-btn" data-copy="repairCategory" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="treatmentCategory" class="required">処置内容区分</label>
+          <select id="treatmentCategory" data-label="処置内容区分">
+            <option value=""></option>
+            <option>交換</option>
+            <option>修正</option>
+            <option>再設定</option>
+            <option>説明済</option>
+          </select>
+          <button class="copy-btn" data-copy="treatmentCategory" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="treatmentCode">処置コード</label>
+          <select id="treatmentCode" data-label="処置コード">
+            <option value=""></option>
+            <option>A01</option>
+            <option>B02</option>
+            <option>C03</option>
+          </select>
+          <button class="copy-btn" data-copy="treatmentCode" title="コピー">CP</button>
+        </div>
+        <div class="field-row full wide-label">
+          <label for="treatmentDetail" class="required">処置内容詳細</label>
+          <textarea id="treatmentDetail" data-label="処置内容詳細"></textarea>
+          <button class="copy-btn" data-copy="treatmentDetail" title="コピー">CP</button>
+        </div>
+        <div class="field-row full wide-label">
+          <label for="contactToClient">連絡事項<br>（サービス→依頼元）</label>
+          <textarea id="contactToClient" data-label="連絡事項（サービス→依頼元）"></textarea>
+          <button class="copy-btn" data-copy="contactToClient" title="コピー">CP</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-parts" data-title="交換部品">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>請求先</th>
+              <th>調整手直し</th>
+              <th>部品番号</th>
+              <th>部品名</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody id="partsBody"></tbody>
+        </table>
+      </div>
+      <div class="parts-empty" id="partsEmpty">部品行はまだありません</div>
+      <div class="form-grid">
+        <div class="field-row">
+          <label for="installStatus">設置状況（技術料４）</label>
+          <input type="text" id="installStatus" data-label="設置状況">
+          <button class="copy-btn" data-copy="installStatus" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="workerCount">作業人数（技術料３）</label>
+          <select id="workerCount" data-label="作業人数">
+            <option value=""></option>
+            <option>1名</option>
+            <option>2名</option>
+            <option>3名</option>
+          </select>
+          <button class="copy-btn" data-copy="workerCount" title="コピー">CP</button>
+        </div>
+      </div>
+      <div class="parts-actions">
+        <button class="action" id="btnAddPart">部品追加</button>
+        <h2>部品詳細</h2>
+        <button class="action" data-copy-parts>部品表コピー</button>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-bill" data-title="請求 / 支払">
+      <div class="form-grid">
+        <div class="field-row">
+          <label for="periodType" class="required">期間区分</label>
+          <select id="periodType" data-label="期間区分">
+            <option value=""></option>
+            <option>期間内</option>
+            <option>期間外</option>
+          </select>
+          <button class="copy-btn" data-copy="periodType" title="コピー">CP</button>
+        </div>
+        <div class="field-row">
+          <label for="claimCode">請求先コード</label>
+          <div class="mini-grid">
+            <input type="text" id="claimCode" data-label="請求先コード1" placeholder="9990">
+            <input type="text" id="claimSubCode" data-label="請求先コード2" placeholder="3280">
+          </div>
+          <button class="copy-btn" data-copy="claimCode" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="claimName">請求先名<br>（領収書宛名）</label>
+          <input type="text" id="claimName" data-label="請求先名" placeholder="本社諸口（無償）">
+          <button class="copy-btn" data-copy="claimName" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="reportSend">完了報告書発送</label>
+          <select id="reportSend" data-label="完了報告書発送">
+            <option value=""></option>
+            <option>不要</option>
+            <option>発送する</option>
+          </select>
+          <button class="copy-btn" data-copy="reportSend" title="コピー">CP</button>
+        </div>
+        <div class="field-row full">
+          <label for="freeReason">無償理由区分</label>
+          <select id="freeReason" data-label="無償理由区分">
+            <option value=""></option>
+            <option>メーカー保証</option>
+            <option>販売店保証</option>
+            <option>特別対応</option>
+            <option>再修理</option>
+          </select>
+          <button class="copy-btn" data-copy="freeReason" title="コピー">CP</button>
+        </div>
+      </div>
+      <h2 class="section-title" style="margin-top:28px">金額明細</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>明細区分</th>
+              <th>自拠点</th>
+              <th>後援拠点</th>
+              <th>合計</th>
+              <th>コピー</th>
+            </tr>
+          </thead>
+          <tbody id="billBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="bottom-bar">
+  <button class="draft" id="btnDraft">一時保存</button>
+  <button class="send" type="button">完了報告送信</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="presetModal" role="dialog" aria-modal="true" aria-labelledby="presetTitle">
+  <div class="modal-head">
+    <div>
+      <h2 id="presetTitle">プリセット管理</h2>
+      <p>作業内容ごとの定型入力を保存し、必要なタイミングで一括反映できます。</p>
+    </div>
+    <button class="action light" id="btnCloseModal">閉じる</button>
+  </div>
+  <div class="modal-body">
+    <div id="storageBadge" class="badge"></div>
+    <div class="preset-tools">
+      <input type="text" id="presetName" placeholder="プリセット名（例：洗濯機 2HF 無償）">
+      <button class="action primary" id="btnSavePreset">保存</button>
+      <button class="action warn" id="btnSaveAsCopy">複製保存</button>
+    </div>
+    <div class="backup-row">
+      <button class="action" id="btnExport">JSONで書き出す</button>
+      <button class="action light" id="btnImport">JSONを読み込む</button>
+      <button class="action danger" id="btnDeleteAllPresets">全プリセット削除</button>
+    </div>
+    <div class="sync-panel">
+      <h3>クラウド同期</h3>
+      <p>スマホ、iPad、PCで同じプリセットを使う場合は、Firebase FirestoreのWeb設定と共通の同期IDを保存してください。同じ同期IDの端末同士でプリセットを送受信します。</p>
+      <div class="sync-grid">
+        <input type="text" id="syncId" placeholder="同期ID（例：repair-team-01）">
+        <input type="password" id="syncPin" placeholder="任意のメモ用PIN（端末内保存のみ）">
+        <textarea id="firebaseConfig" placeholder='Firebase Web設定JSONを貼り付け（例：{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}）'></textarea>
+      </div>
+      <div class="sync-actions">
+        <button class="action primary" id="btnSaveCloudSettings">同期設定を保存</button>
+        <button class="action" id="btnPushCloud">クラウドへ送信</button>
+        <button class="action light" id="btnPullCloud">クラウドから読込</button>
+      </div>
+      <div class="sync-state" id="syncState">クラウド同期は未設定です</div>
+    </div>
+    <div class="search-row">
+      <input type="search" id="presetSearch" placeholder="プリセット検索">
+      <button class="action light" id="btnLoadDraft">一時保存を復元</button>
+      <button class="action light" id="btnCopyJson">現在入力をJSONコピー</button>
+    </div>
+    <div class="preset-list" id="presetList"></div>
+  </div>
+</div>
+
+<div class="confirm" id="confirmBox">
+  <p id="confirmText"></p>
+  <div class="confirm-actions">
+    <button class="action primary" id="confirmOk">OK</button>
+    <button class="action light" id="confirmCancel">キャンセル</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept="application/json,.json">
+
+<script>
+(function(){
+  var STORAGE_KEY = "repair_report_presets_v1";
+  var DRAFT_KEY = "repair_report_draft_v1";
+  var CLOUD_CONFIG_KEY = "repair_report_cloud_config_v1";
+  var CLOUD_SYNC_ID_KEY = "repair_report_cloud_sync_id_v1";
+  var CLOUD_PIN_KEY = "repair_report_cloud_pin_v1";
+  var storageOK = false;
+  var memPresets = [];
+  var dirty = false;
+  var toastTimer = null;
+  var currentTab = "main";
+  var cloud = { app: null, db: null, ready: false, modules: null };
+  var billRows = [
+    "技術料1","技術料2","技術料3","技術料4","部品代","出張料1","出張料2","その他1","その他2","値引き"
+  ];
+  var partRows = [];
+
+  try{
+    localStorage.setItem("__repair_test__","1");
+    localStorage.removeItem("__repair_test__");
+    storageOK = true;
+  }catch(e){ storageOK = false; }
+
+  function $(id){ return document.getElementById(id); }
+  function all(selector, root){ return Array.prototype.slice.call((root || document).querySelectorAll(selector)); }
+  function fieldEls(){ return all("[data-label]"); }
+  function nowText(){
+    var d = new Date();
+    var pad = function(n){ return String(n).padStart(2,"0"); };
+    return d.getFullYear()+"/"+pad(d.getMonth()+1)+"/"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+  }
+  function updateClock(){
+    var d = new Date();
+    var pad = function(n){ return String(n).padStart(2,"0"); };
+    $("clock").textContent = pad(d.getHours())+":"+pad(d.getMinutes());
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  function toast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2400);
+  }
+  function confirmDialog(msg, onOk){
+    $("confirmText").textContent = msg;
+    $("overlay").style.display = "block";
+    $("confirmBox").style.display = "block";
+    function cleanup(){
+      $("confirmBox").style.display = "none";
+      if($("presetModal").style.display !== "block") $("overlay").style.display = "none";
+      $("confirmOk").onclick = null;
+      $("confirmCancel").onclick = null;
+    }
+    $("confirmOk").onclick = function(){ cleanup(); onOk(); };
+    $("confirmCancel").onclick = cleanup;
+  }
+  function loadPresets(){
+    if(!storageOK) return memPresets;
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  function savePresets(arr){
+    if(storageOK){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }else{
+      memPresets = arr;
+    }
+  }
+  function loadCloudSettings(){
+    if(!storageOK) return { configText:"", syncId:"", pin:"" };
+    return {
+      configText: localStorage.getItem(CLOUD_CONFIG_KEY) || "",
+      syncId: localStorage.getItem(CLOUD_SYNC_ID_KEY) || "",
+      pin: localStorage.getItem(CLOUD_PIN_KEY) || ""
+    };
+  }
+  function saveCloudSettings(){
+    if(!storageOK){ toast("この環境では同期設定を保存できません"); return; }
+    localStorage.setItem(CLOUD_CONFIG_KEY, $("firebaseConfig").value.trim());
+    localStorage.setItem(CLOUD_SYNC_ID_KEY, $("syncId").value.trim());
+    localStorage.setItem(CLOUD_PIN_KEY, $("syncPin").value.trim());
+    cloud.ready = false;
+    toast("同期設定を保存しました");
+    updateSyncState();
+  }
+  function updateSyncState(message){
+    var settings = loadCloudSettings();
+    var state = $("syncState");
+    if(message){ state.textContent = message; return; }
+    if(settings.configText && settings.syncId){
+      state.textContent = "同期設定あり：同期ID「" + settings.syncId + "」";
+    }else{
+      state.textContent = "クラウド同期は未設定です";
+    }
+  }
+  async function ensureCloud(){
+    var settings = loadCloudSettings();
+    if(!settings.configText || !settings.syncId){
+      throw new Error("同期設定が未入力です");
+    }
+    if(cloud.ready) return settings;
+    var config;
+    try{
+      config = JSON.parse(settings.configText);
+    }catch(e){
+      throw new Error("Firebase設定JSONの形式が正しくありません");
+    }
+    var appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+    var firestoreMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+    cloud.modules = firestoreMod;
+    var appName = "repairPresetApp-" + settings.syncId.replace(/[^a-zA-Z0-9_-]/g, "_");
+    var existing = appMod.getApps().find(function(app){ return app.name === appName; });
+    cloud.app = existing || appMod.initializeApp(config, appName);
+    cloud.db = firestoreMod.getFirestore(cloud.app);
+    cloud.ready = true;
+    return settings;
+  }
+  async function pushCloudPresets(){
+    try{
+      var settings = await ensureCloud();
+      var m = cloud.modules;
+      await m.setDoc(m.doc(cloud.db, "repairPresetWorkspaces", settings.syncId), {
+        presets: loadPresets(),
+        updatedAt: new Date().toISOString(),
+        appVersion: "1.1"
+      }, { merge: true });
+      updateSyncState("クラウドへ送信しました：" + settings.syncId);
+      toast("クラウドへ送信しました");
+    }catch(e){
+      updateSyncState(e.message || "クラウド送信に失敗しました");
+      toast(e.message || "クラウド送信に失敗しました");
+    }
+  }
+  async function pullCloudPresets(){
+    try{
+      var settings = await ensureCloud();
+      var m = cloud.modules;
+      var snap = await m.getDoc(m.doc(cloud.db, "repairPresetWorkspaces", settings.syncId));
+      if(!snap.exists()) throw new Error("クラウドにデータがありません");
+      var data = snap.data();
+      if(!Array.isArray(data.presets)) throw new Error("クラウドデータの形式が違います");
+      savePresets(data.presets);
+      renderPresets();
+      updateSyncState("クラウドから読み込みました：" + settings.syncId);
+      toast("クラウドから読み込みました");
+    }catch(e){
+      updateSyncState(e.message || "クラウド読込に失敗しました");
+      toast(e.message || "クラウド読込に失敗しました");
+    }
+  }
+  function setDirty(value){
+    dirty = value;
+    $("draftState").textContent = dirty ? "未保存の変更あり" : "未保存の変更なし";
+  }
+  function collectData(){
+    var data = {};
+    fieldEls().forEach(function(el){ data[el.id] = el.value; });
+    data.__parts = partRows;
+    return data;
+  }
+  function applyData(data){
+    if(!data || typeof data !== "object") return;
+    fieldEls().forEach(function(el){
+      if(Object.prototype.hasOwnProperty.call(data, el.id)) el.value = data[el.id];
+    });
+    partRows = Array.isArray(data.__parts) ? data.__parts.slice() : [];
+    renderParts();
+    syncHeader();
+    setDirty(false);
+  }
+  function clearData(){
+    fieldEls().forEach(function(el){
+      if(el.tagName === "SELECT") el.selectedIndex = 0;
+      else if(el.type === "number") el.value = "0";
+      else el.value = "";
+    });
+    partRows = [];
+    renderParts();
+    syncHeader();
+    setDirty(true);
+  }
+  function syncHeader(){
+    $("caseCustomer").textContent = $("customerName").value || "未入力";
+    if(!$("productModel").value && $("model").value) $("productModel").value = $("model").value;
+  }
+  function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast("コピーしました"); }).catch(function(){ fallbackCopy(text); });
+    }else{
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{ document.execCommand("copy"); toast("コピーしました"); }
+    catch(e){ toast("コピーに失敗しました"); }
+    document.body.removeChild(ta);
+  }
+  function fieldValue(id){
+    var el = $(id);
+    return el ? el.value : "";
+  }
+  function summaryForPanel(panel){
+    var rows = [];
+    all("[data-label]", panel).forEach(function(el){
+      var value = el.value;
+      if(value !== "") rows.push(el.getAttribute("data-label") + "：" + value);
+    });
+    return rows.join("\n");
+  }
+  function fullSummary(){
+    var rows = [];
+    all(".tab-panel").forEach(function(panel){
+      var text = summaryForPanel(panel);
+      if(text) rows.push("【" + panel.getAttribute("data-title") + "】\n" + text);
+    });
+    if(partRows.length){
+      rows.push("【交換部品一覧】\n" + partsSummary());
+    }
+    return rows.join("\n\n");
+  }
+  function partsSummary(){
+    return partRows.map(function(p, i){
+      return (i+1)+". "+[p.billing,p.adjust,p.number,p.name,p.qty].filter(Boolean).join(" / ");
+    }).join("\n");
+  }
+  function saveDraft(){
+    if(storageOK) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
+    toast("一時保存しました");
+    setDirty(false);
+  }
+  function loadDraft(){
+    if(!storageOK){ toast("この環境では一時保存を復元できません"); return; }
+    var raw = localStorage.getItem(DRAFT_KEY);
+    if(!raw){ toast("一時保存データがありません"); return; }
+    try{ applyData(JSON.parse(raw)); toast("一時保存を復元しました"); closeModal(); }
+    catch(e){ toast("一時保存の復元に失敗しました"); }
+  }
+  function formatMeta(p){
+    return (p.savedAt || "").replace("T"," ").slice(0,16) + " / " + Object.keys(p.data || {}).length + "項目";
+  }
+
+  function renderBill(){
+    var body = $("billBody");
+    body.innerHTML = "";
+    billRows.forEach(function(name, i){
+      var idBase = "bill" + i;
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>"+name+"</td>"+
+        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+" 自拠点\" value=\"0\"></td>"+
+        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Support\" data-label=\""+name+" 後援拠点\" value=\"0\"></td>"+
+        "<td class=\"number\" id=\""+idBase+"Total\">0</td>"+
+        "<td><button class=\"copy-btn\" data-copy-bill=\""+idBase+"\">CP</button></td>";
+      body.appendChild(tr);
+    });
+  }
+  function updateBillTotals(){
+    billRows.forEach(function(name, i){
+      var own = Number(fieldValue("bill"+i+"Own") || 0);
+      var support = Number(fieldValue("bill"+i+"Support") || 0);
+      var total = own + support;
+      var cell = $("bill"+i+"Total");
+      if(cell) cell.textContent = total.toLocaleString("ja-JP");
+    });
+  }
+  function renderParts(){
+    var body = $("partsBody");
+    body.innerHTML = "";
+    $("partsEmpty").style.display = partRows.length ? "none" : "grid";
+    partRows.forEach(function(p, i){
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td><input data-part=\"billing\" data-index=\""+i+"\" value=\""+escapeAttr(p.billing || "")+"\"></td>"+
+        "<td><input data-part=\"adjust\" data-index=\""+i+"\" value=\""+escapeAttr(p.adjust || "")+"\"></td>"+
+        "<td><input data-part=\"number\" data-index=\""+i+"\" value=\""+escapeAttr(p.number || "")+"\"></td>"+
+        "<td><input data-part=\"name\" data-index=\""+i+"\" value=\""+escapeAttr(p.name || "")+"\"></td>"+
+        "<td><input type=\"number\" data-part=\"qty\" data-index=\""+i+"\" value=\""+escapeAttr(p.qty || "1")+"\"></td>";
+      body.appendChild(tr);
+    });
+  }
+  function escapeAttr(value){
+    return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  }
+  function updateStorageBadge(){
+    var badge = $("storageBadge");
+    if(storageOK){
+      badge.className = "badge ok";
+      badge.textContent = "自動保存対応：ページを閉じてもプリセットが残ります";
+    }else{
+      badge.className = "badge ng";
+      badge.textContent = "一時保存のみ：JSON書き出しを利用してください";
+    }
+  }
+  function renderPresets(){
+    var list = $("presetList");
+    var query = $("presetSearch").value.trim().toLowerCase();
+    var presets = loadPresets().filter(function(p){
+      return !query || String(p.name || "").toLowerCase().indexOf(query) >= 0;
+    });
+    list.innerHTML = "";
+    if(!presets.length){
+      var empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = query ? "該当するプリセットがありません。" : "まだプリセットがありません。現在の入力に名前を付けて保存してください。";
+      list.appendChild(empty);
+      return;
+    }
+    presets.forEach(function(p){
+      var item = document.createElement("div");
+      item.className = "preset-item";
+      item.innerHTML =
+        "<div class=\"preset-info\"><div class=\"preset-name\"></div><div class=\"preset-meta\"></div></div>"+
+        "<button class=\"action primary\" data-load-preset=\""+escapeAttr(p.id)+"\">読込</button>"+
+        "<button class=\"action warn\" data-overwrite-preset=\""+escapeAttr(p.id)+"\">上書き</button>"+
+        "<button class=\"action danger\" data-delete-preset=\""+escapeAttr(p.id)+"\">削除</button>";
+      item.querySelector(".preset-name").textContent = p.name;
+      item.querySelector(".preset-meta").textContent = formatMeta(p);
+      list.appendChild(item);
+    });
+  }
+  function openModal(){
+    updateStorageBadge();
+    var settings = loadCloudSettings();
+    $("firebaseConfig").value = settings.configText;
+    $("syncId").value = settings.syncId;
+    $("syncPin").value = settings.pin;
+    updateSyncState();
+    renderPresets();
+    $("overlay").style.display = "block";
+    $("presetModal").style.display = "block";
+    $("presetName").focus();
+  }
+  function closeModal(){
+    $("presetModal").style.display = "none";
+    $("overlay").style.display = "none";
+  }
+  function savePreset(forceCopy){
+    var name = $("presetName").value.trim();
+    if(!name){ toast("プリセット名を入力してください"); return; }
+    var presets = loadPresets();
+    var existing = presets.findIndex(function(p){ return p.name === name; });
+    var data = collectData();
+    function doSave(){
+      var record = {
+        id: "p_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+        name: name,
+        savedAt: new Date().toISOString(),
+        data: data
+      };
+      if(existing >= 0 && !forceCopy) presets.splice(existing, 1);
+      if(existing >= 0 && forceCopy) record.name = name + " コピー";
+      presets.unshift(record);
+      savePresets(presets);
+      $("presetName").value = "";
+      renderPresets();
+      toast(record.name + " を保存しました");
+      setDirty(false);
+    }
+    if(existing >= 0 && !forceCopy){
+      confirmDialog(name + " は既にあります。上書きしますか？", doSave);
+    }else{
+      doSave();
+    }
+  }
+  function exportPresets(){
+    var presets = loadPresets();
+    if(!presets.length){ toast("書き出すプリセットがありません"); return; }
+    downloadJson("repair_presets.json", presets);
+  }
+  function downloadJson(filename, data){
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    toast(filename + " を書き出しました");
+  }
+  function importPresets(file){
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        var parsed = JSON.parse(ev.target.result);
+        if(!Array.isArray(parsed)) throw new Error("invalid");
+        var current = loadPresets();
+        var imported = 0;
+        parsed.forEach(function(p){
+          if(!p || !p.name || !p.data) return;
+          var idx = current.findIndex(function(x){ return x.name === p.name; });
+          var record = {
+            id: p.id || ("p_" + Date.now() + "_" + Math.random().toString(16).slice(2)),
+            name: p.name,
+            savedAt: p.savedAt || new Date().toISOString(),
+            data: p.data
+          };
+          if(idx >= 0) current[idx] = record;
+          else current.push(record);
+          imported++;
+        });
+        savePresets(current);
+        renderPresets();
+        toast(imported + "件のプリセットを読み込みました");
+      }catch(e){
+        toast("JSONの読み込みに失敗しました");
+      }
+    };
+    reader.readAsText(file);
+  }
+  function sampleData(){
+    applyData({
+      doneAt: nowText(),
+      customerName: "富永　美保",
+      model: "BDSTX120HR",
+      productModel: "BDSTX120HR()",
+      serial: "2501456",
+      factory: "320：（電化）",
+      faultCode: "2HF",
+      repairSales: "修理売上",
+      internalNote: "【2HF】該当症状あり　連絡希望時間帯：指定なし　お客様メールアドレス：sample@example.com",
+      serviceNote: "液晶画面が表示しない場合は、関連部品の状態確認を実施。",
+      productName: "全自洗",
+      startDate: "2022/08",
+      endDate: "2023/10",
+      partsWarranty: "2029/10",
+      symptomCode: "2HF",
+      symptom: "液晶画面が表示しない",
+      frequency: "常時",
+      repairCategory: "部品交換",
+      treatmentCategory: "交換",
+      treatmentDetail: "症状確認後、対象部品を交換。動作確認を実施し正常復帰を確認。",
+      contactToClient: "作業完了。再発時は点検履歴を参照してください。",
+      periodType: "期間内",
+      claimCode: "9990",
+      claimSubCode: "3280",
+      claimName: "本社諸口（無償）",
+      reportSend: "不要",
+      freeReason: "メーカー保証",
+      bill0Own: "0",
+      bill1Own: "0",
+      bill5Own: "1900",
+      __parts: [
+        {billing:"請求先1", adjust:"", number:"ABC-123", name:"表示基板", qty:"1"}
+      ]
+    });
+    updateBillTotals();
+    setDirty(true);
+    toast("サンプルを入力しました");
+  }
+
+  renderBill();
+  renderParts();
+  updateBillTotals();
+  $("doneAt").value = nowText();
+
+  document.addEventListener("input", function(ev){
+    var target = ev.target;
+    if(target.matches("[data-label]")){
+      setDirty(true);
+      syncHeader();
+      updateBillTotals();
+    }
+    if(target.matches("[data-part]")){
+      var idx = Number(target.getAttribute("data-index"));
+      var key = target.getAttribute("data-part");
+      if(partRows[idx]) partRows[idx][key] = target.value;
+      setDirty(true);
+    }
+  });
+  document.addEventListener("change", function(ev){
+    if(ev.target.matches("[data-label]")){
+      setDirty(true);
+      syncHeader();
+      updateBillTotals();
+    }
+  });
+  document.addEventListener("click", function(ev){
+    var copyId = ev.target.getAttribute("data-copy");
+    if(copyId){ copyText(fieldValue(copyId)); return; }
+    var billId = ev.target.getAttribute("data-copy-bill");
+    if(billId){
+      copyText($(billId+"Total").textContent);
+      return;
+    }
+    var loadId = ev.target.getAttribute("data-load-preset");
+    if(loadId){
+      var p = loadPresets().find(function(x){ return x.id === loadId; });
+      if(p){
+        confirmDialog(p.name + " を読み込みます。現在の入力は上書きされます。", function(){
+          applyData(p.data);
+          updateBillTotals();
+          closeModal();
+          toast(p.name + " を読み込みました");
+        });
+      }
+      return;
+    }
+    var overwriteId = ev.target.getAttribute("data-overwrite-preset");
+    if(overwriteId){
+      var arr = loadPresets();
+      var idx = arr.findIndex(function(x){ return x.id === overwriteId; });
+      if(idx >= 0){
+        confirmDialog(arr[idx].name + " に現在の入力を上書きしますか？", function(){
+          arr[idx].data = collectData();
+          arr[idx].savedAt = new Date().toISOString();
+          savePresets(arr);
+          renderPresets();
+          toast("上書き保存しました");
+          setDirty(false);
+        });
+      }
+      return;
+    }
+    var deleteId = ev.target.getAttribute("data-delete-preset");
+    if(deleteId){
+      var current = loadPresets();
+      var target = current.find(function(x){ return x.id === deleteId; });
+      confirmDialog((target ? target.name : "プリセット") + " を削除しますか？", function(){
+        savePresets(current.filter(function(x){ return x.id !== deleteId; }));
+        renderPresets();
+        toast("削除しました");
+      });
+    }
+  });
+  all(".tab").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      currentTab = btn.getAttribute("data-tab");
+      all(".tab").forEach(function(b){ b.classList.remove("active"); });
+      all(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      $("panel-" + currentTab).classList.add("active");
+    });
+  });
+  $("btnOpenModal").addEventListener("click", openModal);
+  $("btnOpenModalTop").addEventListener("click", openModal);
+  $("btnCloseModal").addEventListener("click", closeModal);
+  $("overlay").addEventListener("click", function(){
+    if($("confirmBox").style.display === "block") return;
+    closeModal();
+  });
+  $("btnSavePreset").addEventListener("click", function(){ savePreset(false); });
+  $("btnSaveAsCopy").addEventListener("click", function(){ savePreset(true); });
+  $("btnExport").addEventListener("click", exportPresets);
+  $("btnExportQuick").addEventListener("click", exportPresets);
+  $("btnImport").addEventListener("click", function(){ $("fileInput").value = ""; $("fileInput").click(); });
+  $("fileInput").addEventListener("change", function(ev){
+    if(ev.target.files && ev.target.files[0]) importPresets(ev.target.files[0]);
+  });
+  $("presetSearch").addEventListener("input", renderPresets);
+  $("btnDeleteAllPresets").addEventListener("click", function(){
+    confirmDialog("保存済みプリセットをすべて削除しますか？", function(){
+      savePresets([]);
+      renderPresets();
+      toast("全プリセットを削除しました");
+    });
+  });
+  $("btnClear").addEventListener("click", function(){
+    confirmDialog("全ての入力内容をクリアしますか？", function(){ clearData(); toast("クリアしました"); });
+  });
+  $("btnFillSample").addEventListener("click", sampleData);
+  $("btnDraft").addEventListener("click", saveDraft);
+  $("btnLoadDraft").addEventListener("click", loadDraft);
+  $("btnCopyJson").addEventListener("click", function(){ copyText(JSON.stringify(collectData(), null, 2)); });
+  $("btnSaveCloudSettings").addEventListener("click", saveCloudSettings);
+  $("btnPushCloud").addEventListener("click", pushCloudPresets);
+  $("btnPullCloud").addEventListener("click", pullCloudPresets);
+  document.querySelector("[data-copy-summary]").addEventListener("click", function(){
+    var text = fullSummary();
+    copyText(text || "入力項目がありません");
+  });
+  document.querySelector("[data-copy-active]").addEventListener("click", function(){
+    var panel = $("panel-" + currentTab);
+    var text = summaryForPanel(panel);
+    copyText(text || "表示タブに入力項目がありません");
+  });
+  document.querySelector("[data-copy-parts]").addEventListener("click", function(){
+    copyText(partsSummary() || "部品行がありません");
+  });
+  $("btnAddPart").addEventListener("click", function(){
+    partRows.push({billing:"請求先1", adjust:"", number:"", name:"", qty:"1"});
+    renderParts();
+    setDirty(true);
+  });
+  window.addEventListener("beforeunload", function(){
+    if(storageOK && dirty) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
+  });
+  syncHeader();
+})();
+</script>
+</body>
+</html>
