@@ -63,6 +63,7 @@ button{cursor:pointer}
 h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
 .subtitle{margin-top:3px;font-size:12px;opacity:.82}
 .hero-actions{display:grid;grid-template-columns:repeat(2,minmax(122px,1fr));gap:8px;min-width:270px}
+.hero-actions:has(> :only-child){grid-template-columns:minmax(180px,260px)}
 .pill{
   border:0;
   border-radius:999px;
@@ -303,6 +304,7 @@ td.number{text-align:right}
   gap:10px;
   margin-bottom:14px;
 }
+.preset-tools.simple-tools{grid-template-columns:1fr auto}
 .backup-row,.search-row{
   display:grid;
   grid-template-columns:1fr auto auto;
@@ -388,7 +390,6 @@ td.number{text-align:right}
 .confirm p{margin:0 0 18px;line-height:1.65;font-weight:800}
 .confirm-actions{display:flex;gap:10px}
 .confirm-actions button{flex:1}
-#fileInput{display:none}
 @media (max-width:860px){
   .hero{grid-template-columns:1fr}
   .hero-actions{min-width:0}
@@ -400,7 +401,7 @@ td.number{text-align:right}
   .tab-panel{padding:16px}
   .form-grid{grid-template-columns:1fr}
   .field-row,.field-row.wide-label{grid-template-columns:118px minmax(0,1fr) auto}
-  .preset-tools,.backup-row,.search-row{grid-template-columns:1fr}
+  .preset-tools,.preset-tools.simple-tools,.backup-row,.search-row{grid-template-columns:1fr}
   .sync-grid{grid-template-columns:1fr}
   .preset-item{grid-template-columns:1fr 1fr 1fr}
   .preset-info{grid-column:1/-1}
@@ -442,10 +443,7 @@ td.number{text-align:right}
         </div>
       </div>
       <div class="hero-actions">
-        <button class="pill" data-copy-summary>入力サマリコピー</button>
-        <button class="pill" data-copy-active>表示タブコピー</button>
-        <button class="pill" id="btnExportQuick">JSON書出</button>
-        <button class="pill red" id="btnOpenModalTop">プリセット</button>
+        <button class="pill red" id="btnOpenModalTop">プリセット保存・読込</button>
       </div>
     </div>
   </header>
@@ -458,7 +456,6 @@ td.number{text-align:right}
     </div>
     <div class="manager">
       <button class="action primary" id="btnOpenModal">プリセット保存・読込</button>
-      <button class="action light" id="btnFillSample">サンプル入力</button>
       <button class="action danger" id="btnClear">全クリア</button>
     </div>
   </section>
@@ -804,35 +801,13 @@ td.number{text-align:right}
   </div>
   <div class="modal-body">
     <div id="storageBadge" class="badge"></div>
-    <div class="preset-tools">
+    <div class="preset-tools simple-tools">
       <input type="text" id="presetName" placeholder="プリセット名（例：洗濯機 2HF 無償）">
       <button class="action primary" id="btnSavePreset">保存</button>
-      <button class="action warn" id="btnSaveAsCopy">複製保存</button>
-    </div>
-    <div class="backup-row">
-      <button class="action" id="btnExport">JSONで書き出す</button>
-      <button class="action light" id="btnImport">JSONを読み込む</button>
-      <button class="action danger" id="btnDeleteAllPresets">全プリセット削除</button>
-    </div>
-    <div class="sync-panel">
-      <h3>クラウド同期</h3>
-      <p>スマホ、iPad、PCで同じプリセットを使う場合は、Firebase FirestoreのWeb設定と共通の同期IDを保存してください。同じ同期IDの端末同士でプリセットを送受信します。</p>
-      <div class="sync-grid">
-        <input type="text" id="syncId" placeholder="同期ID（例：repair-team-01）">
-        <input type="password" id="syncPin" placeholder="任意のメモ用PIN（端末内保存のみ）">
-        <textarea id="firebaseConfig" placeholder='Firebase Web設定JSONを貼り付け（例：{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}）'></textarea>
-      </div>
-      <div class="sync-actions">
-        <button class="action primary" id="btnSaveCloudSettings">同期設定を保存</button>
-        <button class="action" id="btnPushCloud">クラウドへ送信</button>
-        <button class="action light" id="btnPullCloud">クラウドから読込</button>
-      </div>
-      <div class="sync-state" id="syncState">クラウド同期は未設定です</div>
     </div>
     <div class="search-row">
       <input type="search" id="presetSearch" placeholder="プリセット検索">
       <button class="action light" id="btnLoadDraft">一時保存を復元</button>
-      <button class="action light" id="btnCopyJson">現在入力をJSONコピー</button>
     </div>
     <div class="preset-list" id="presetList"></div>
   </div>
@@ -847,7 +822,6 @@ td.number{text-align:right}
 </div>
 
 <div class="toast" id="toast"></div>
-<input type="file" id="fileInput" accept="application/json,.json">
 
 <script>
 (function(){
@@ -1185,11 +1159,6 @@ td.number{text-align:right}
   }
   function openModal(){
     updateStorageBadge();
-    var settings = loadCloudSettings();
-    $("firebaseConfig").value = settings.configText;
-    $("syncId").value = settings.syncId;
-    $("syncPin").value = settings.pin;
-    updateSyncState();
     renderPresets();
     $("overlay").style.display = "block";
     $("presetModal").style.display = "block";
@@ -1406,40 +1375,12 @@ td.number{text-align:right}
     closeModal();
   });
   $("btnSavePreset").addEventListener("click", function(){ savePreset(false); });
-  $("btnSaveAsCopy").addEventListener("click", function(){ savePreset(true); });
-  $("btnExport").addEventListener("click", exportPresets);
-  $("btnExportQuick").addEventListener("click", exportPresets);
-  $("btnImport").addEventListener("click", function(){ $("fileInput").value = ""; $("fileInput").click(); });
-  $("fileInput").addEventListener("change", function(ev){
-    if(ev.target.files && ev.target.files[0]) importPresets(ev.target.files[0]);
-  });
   $("presetSearch").addEventListener("input", renderPresets);
-  $("btnDeleteAllPresets").addEventListener("click", function(){
-    confirmDialog("保存済みプリセットをすべて削除しますか？", function(){
-      savePresets([]);
-      renderPresets();
-      toast("全プリセットを削除しました");
-    });
-  });
   $("btnClear").addEventListener("click", function(){
     confirmDialog("全ての入力内容をクリアしますか？", function(){ clearData(); toast("クリアしました"); });
   });
-  $("btnFillSample").addEventListener("click", sampleData);
   $("btnDraft").addEventListener("click", saveDraft);
   $("btnLoadDraft").addEventListener("click", loadDraft);
-  $("btnCopyJson").addEventListener("click", function(){ copyText(JSON.stringify(collectData(), null, 2)); });
-  $("btnSaveCloudSettings").addEventListener("click", saveCloudSettings);
-  $("btnPushCloud").addEventListener("click", pushCloudPresets);
-  $("btnPullCloud").addEventListener("click", pullCloudPresets);
-  document.querySelector("[data-copy-summary]").addEventListener("click", function(){
-    var text = fullSummary();
-    copyText(text || "入力項目がありません");
-  });
-  document.querySelector("[data-copy-active]").addEventListener("click", function(){
-    var panel = $("panel-" + currentTab);
-    var text = summaryForPanel(panel);
-    copyText(text || "表示タブに入力項目がありません");
-  });
   document.querySelector("[data-copy-parts]").addEventListener("click", function(){
     copyText(partsSummary() || "部品行がありません");
   });
