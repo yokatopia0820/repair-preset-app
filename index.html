@@ -34,7 +34,7 @@ body{
 }
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-.app-shell{min-height:100vh;padding-bottom:86px}
+.app-shell{min-height:100vh;padding-bottom:76px}
 .topbar{
   position:sticky;
   top:0;
@@ -43,27 +43,15 @@ button{cursor:pointer}
   color:#fff;
   box-shadow:0 2px 0 rgba(0,0,0,.08);
 }
-.statusline{
+.hero{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  padding:10px 16px 0;
-  font-size:13px;
-  opacity:.92;
+  justify-content:center;
+  padding:10px 14px;
 }
-.hero{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:12px;
-  align-items:center;
-  padding:12px 16px 16px;
-}
-.title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
-.back{font-size:34px;line-height:1;color:#fff;opacity:.7}
-h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
-.subtitle{margin-top:3px;font-size:12px;opacity:.82}
-.hero-actions{display:grid;grid-template-columns:repeat(2,minmax(122px,1fr));gap:8px;min-width:270px}
-.hero-actions:has(> :only-child){grid-template-columns:minmax(180px,260px)}
+.title-wrap{display:flex;align-items:center;justify-content:center;min-width:0}
+.back,.subtitle,.hero-actions{display:none}
+h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .pill{
   border:0;
   border-radius:999px;
@@ -89,6 +77,46 @@ h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
 .case-title{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:18px}
 .case-title strong{font-weight:800}
 .manager{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.mode-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  font-size:13px;
+  font-weight:900;
+}
+.switch{
+  position:relative;
+  display:inline-flex;
+  width:52px;
+  height:30px;
+  flex:0 0 auto;
+}
+.switch input{position:absolute;opacity:0;pointer-events:none}
+.slider{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background:#cfd3da;
+  transition:background .18s;
+}
+.slider:before{
+  content:"";
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 5px rgba(0,0,0,.22);
+  transition:transform .18s;
+}
+.switch input:checked + .slider{background:var(--red)}
+.switch input:checked + .slider:before{transform:translateX(22px)}
 .action{
   border:0;
   border-radius:8px;
@@ -137,26 +165,28 @@ h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
 .invoice-add{min-width:150px;border:5px solid #eee;background:#fff;color:#aaa;font-size:18px;font-weight:800}
 .tabs{
   position:sticky;
-  top:98px;
+  top:42px;
   z-index:20;
   max-width:1180px;
   margin:0 auto;
   display:grid;
-  grid-template-columns:repeat(5,minmax(120px,1fr));
-  gap:6px;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;
   background:#fff;
   border-bottom:4px solid var(--red);
-  overflow:auto;
+  overflow:hidden;
 }
 .tab{
   border:0;
-  border-radius:10px 10px 0 0;
+  border-radius:8px 8px 0 0;
   background:#ef91a5;
   color:#fff;
-  min-height:58px;
-  padding:12px 10px;
+  min-height:52px;
+  padding:10px 6px;
   font-weight:900;
-  white-space:nowrap;
+  line-height:1.2;
+  white-space:normal;
+  word-break:keep-all;
 }
 .tab.active{background:var(--red)}
 .workspace{
@@ -168,6 +198,24 @@ h1{margin:0;font-size:22px;font-weight:800;white-space:nowrap}
 }
 .tab-panel{display:none;padding:22px 40px 36px}
 .tab-panel.active{display:block}
+.display-panel{display:none;max-width:1180px;margin:0 auto;background:#fff;padding:18px;border-left:5px solid #ffd2dc;border-right:5px solid #ffd2dc}
+.display-panel.active{display:block}
+.copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.copy-card{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  color:#222;
+  padding:12px;
+  text-align:left;
+  min-height:64px;
+}
+.copy-card strong{display:block;color:var(--red);font-size:12px;margin-bottom:5px}
+.copy-card span{display:block;line-height:1.45;word-break:break-word}
+.copy-empty{padding:22px;text-align:center;color:var(--muted);font-weight:800;border:1px dashed #ccc;border-radius:8px}
+body.view-mode .workspace{display:none}
+body.view-mode .display-panel{display:block}
+body.view-mode .edit-only{display:none!important}
 .section-title{
   margin:0 0 18px;
   color:var(--red);
@@ -391,13 +439,12 @@ td.number{text-align:right}
 .confirm-actions{display:flex;gap:10px}
 .confirm-actions button{flex:1}
 @media (max-width:860px){
-  .hero{grid-template-columns:1fr}
-  .hero-actions{min-width:0}
   .casebar{grid-template-columns:1fr}
   .manager{justify-content:stretch}
   .manager .action{flex:1}
-  .tabs{top:122px;grid-template-columns:repeat(5,minmax(96px,1fr))}
+  .tabs{top:42px}
   .workspace{border-left:0;border-right:0}
+  .display-panel{border-left:0;border-right:0}
   .tab-panel{padding:16px}
   .form-grid{grid-template-columns:1fr}
   .field-row,.field-row.wide-label{grid-template-columns:118px minmax(0,1fr) auto}
@@ -409,11 +456,16 @@ td.number{text-align:right}
 @media (max-width:520px){
   .statusline{font-size:11px}
   h1{font-size:18px}
-  .hero-actions{grid-template-columns:1fr 1fr}
-  .pill{font-size:11px;padding:8px}
+  h1{font-size:16px}
+  .hero{padding:8px 10px}
   .case-title{font-size:15px;gap:10px}
+  .casebar{padding:10px 12px}
+  .manager{gap:8px}
+  .mode-control{width:100%;justify-content:space-between}
   .invoice-strip{padding:14px 12px 22px}
-  .tab{min-height:50px;font-size:13px}
+  .tabs{gap:2px}
+  .tab{min-height:44px;font-size:11px;padding:7px 2px;letter-spacing:0}
+  .copy-grid{grid-template-columns:1fr}
   .field-row,.field-row.wide-label{
     grid-template-columns:1fr auto;
     gap:8px;
@@ -430,20 +482,11 @@ td.number{text-align:right}
 <body>
 <div class="app-shell">
   <header class="topbar">
-    <div class="statusline">
-      <div>Field Service Preset</div>
-      <div id="clock">--:--</div>
-    </div>
     <div class="hero">
       <div class="title-wrap">
-        <div class="back">‹</div>
         <div>
           <h1>完了報告 入力プリセット</h1>
-          <div class="subtitle">定型入力を保存して、必要なフォームへ一括反映します</div>
         </div>
-      </div>
-      <div class="hero-actions">
-        <button class="pill red" id="btnOpenModalTop">プリセット保存・読込</button>
       </div>
     </div>
   </header>
@@ -455,6 +498,10 @@ td.number{text-align:right}
       <span id="draftState">未保存の変更なし</span>
     </div>
     <div class="manager">
+      <label class="mode-control">
+        <span id="modeText">編集モード</span>
+        <span class="switch"><input type="checkbox" id="modeToggle" checked><span class="slider"></span></span>
+      </label>
       <button class="action primary" id="btnOpenModal">プリセット保存・読込</button>
       <button class="action danger" id="btnClear">全クリア</button>
     </div>
@@ -783,10 +830,13 @@ td.number{text-align:right}
       </div>
     </section>
   </main>
+  <section class="display-panel" id="displayPanel">
+    <div class="copy-grid" id="copyGrid"></div>
+  </section>
 </div>
 
 <div class="bottom-bar">
-  <button class="draft" id="btnDraft">一時保存</button>
+  <button class="draft" id="btnDraft">保存</button>
   <button class="send" type="button">完了報告送信</button>
 </div>
 
@@ -827,6 +877,7 @@ td.number{text-align:right}
 (function(){
   var STORAGE_KEY = "repair_report_presets_v1";
   var DRAFT_KEY = "repair_report_draft_v1";
+  var MODE_KEY = "repair_report_mode_v1";
   var CLOUD_CONFIG_KEY = "repair_report_cloud_config_v1";
   var CLOUD_SYNC_ID_KEY = "repair_report_cloud_sync_id_v1";
   var CLOUD_PIN_KEY = "repair_report_cloud_pin_v1";
@@ -855,14 +906,6 @@ td.number{text-align:right}
     var pad = function(n){ return String(n).padStart(2,"0"); };
     return d.getFullYear()+"/"+pad(d.getMonth()+1)+"/"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes());
   }
-  function updateClock(){
-    var d = new Date();
-    var pad = function(n){ return String(n).padStart(2,"0"); };
-    $("clock").textContent = pad(d.getHours())+":"+pad(d.getMinutes());
-  }
-  updateClock();
-  setInterval(updateClock, 30000);
-
   function toast(msg){
     var t = $("toast");
     t.textContent = msg;
@@ -1062,10 +1105,60 @@ td.number{text-align:right}
       return (i+1)+". "+[p.billing,p.adjust,p.number,p.name,p.qty].filter(Boolean).join(" / ");
     }).join("\n");
   }
+  function activePanel(){
+    return $("panel-" + currentTab);
+  }
+  function renderDisplayMode(){
+    var grid = $("copyGrid");
+    if(!grid) return;
+    grid.innerHTML = "";
+    var panel = activePanel();
+    var items = [];
+    all("[data-label]", panel).forEach(function(el){
+      var value = el.value;
+      if(value !== "" && value !== "0"){
+        items.push({ label: el.getAttribute("data-label"), value: value });
+      }
+    });
+    if(currentTab === "parts" && partRows.length){
+      items.push({ label: "交換部品一覧", value: partsSummary() });
+    }
+    if(currentTab === "bill"){
+      billRows.forEach(function(name, i){
+        var total = $("bill" + i + "Total");
+        if(total && total.textContent !== "0") items.push({ label: name + " 合計", value: total.textContent });
+      });
+    }
+    if(!items.length){
+      var empty = document.createElement("div");
+      empty.className = "copy-empty";
+      empty.textContent = "入力済みの項目はありません。編集モードで入力してください。";
+      grid.appendChild(empty);
+      return;
+    }
+    items.forEach(function(item){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "copy-card";
+      btn.innerHTML = "<strong></strong><span></span>";
+      btn.querySelector("strong").textContent = item.label;
+      btn.querySelector("span").textContent = item.value;
+      btn.addEventListener("click", function(){ copyText(item.value); });
+      grid.appendChild(btn);
+    });
+  }
+  function setMode(editing, persist){
+    document.body.classList.toggle("view-mode", !editing);
+    $("modeToggle").checked = editing;
+    $("modeText").textContent = editing ? "編集モード" : "表示モード";
+    if(persist && storageOK) localStorage.setItem(MODE_KEY, editing ? "edit" : "view");
+    renderDisplayMode();
+  }
   function saveDraft(){
     if(storageOK) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
-    toast("一時保存しました");
+    toast("保存しました");
     setDirty(false);
+    setMode(false, true);
   }
   function loadDraft(){
     if(!storageOK){ toast("この環境では一時保存を復元できません"); return; }
@@ -1127,7 +1220,7 @@ td.number{text-align:right}
       badge.textContent = "自動保存対応：ページを閉じてもプリセットが残ります";
     }else{
       badge.className = "badge ng";
-      badge.textContent = "一時保存のみ：JSON書き出しを利用してください";
+      badge.textContent = "このブラウザを開いている間のみ保存できます";
     }
   }
   function renderPresets(){
@@ -1189,6 +1282,7 @@ td.number{text-align:right}
       renderPresets();
       toast(record.name + " を保存しました");
       setDirty(false);
+      setMode(false, true);
     }
     if(existing >= 0 && !forceCopy){
       confirmDialog(name + " は既にあります。上書きしますか？", doSave);
@@ -1295,12 +1389,14 @@ td.number{text-align:right}
       setDirty(true);
       syncHeader();
       updateBillTotals();
+      renderDisplayMode();
     }
     if(target.matches("[data-part]")){
       var idx = Number(target.getAttribute("data-index"));
       var key = target.getAttribute("data-part");
       if(partRows[idx]) partRows[idx][key] = target.value;
       setDirty(true);
+      renderDisplayMode();
     }
   });
   document.addEventListener("change", function(ev){
@@ -1308,6 +1404,7 @@ td.number{text-align:right}
       setDirty(true);
       syncHeader();
       updateBillTotals();
+      renderDisplayMode();
     }
   });
   document.addEventListener("click", function(ev){
@@ -1327,6 +1424,7 @@ td.number{text-align:right}
           updateBillTotals();
           closeModal();
           toast(p.name + " を読み込みました");
+          renderDisplayMode();
         });
       }
       return;
@@ -1365,10 +1463,10 @@ td.number{text-align:right}
       all(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
       btn.classList.add("active");
       $("panel-" + currentTab).classList.add("active");
+      renderDisplayMode();
     });
   });
   $("btnOpenModal").addEventListener("click", openModal);
-  $("btnOpenModalTop").addEventListener("click", openModal);
   $("btnCloseModal").addEventListener("click", closeModal);
   $("overlay").addEventListener("click", function(){
     if($("confirmBox").style.display === "block") return;
@@ -1381,6 +1479,7 @@ td.number{text-align:right}
   });
   $("btnDraft").addEventListener("click", saveDraft);
   $("btnLoadDraft").addEventListener("click", loadDraft);
+  $("modeToggle").addEventListener("change", function(){ setMode($("modeToggle").checked, true); });
   document.querySelector("[data-copy-parts]").addEventListener("click", function(){
     copyText(partsSummary() || "部品行がありません");
   });
@@ -1393,6 +1492,15 @@ td.number{text-align:right}
     if(storageOK && dirty) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
   });
   syncHeader();
+  if(storageOK){
+    var savedDraft = localStorage.getItem(DRAFT_KEY);
+    if(savedDraft){
+      try{ applyData(JSON.parse(savedDraft)); updateBillTotals(); }catch(e){}
+    }
+    setMode(localStorage.getItem(MODE_KEY) !== "view", false);
+  }else{
+    setMode(true, false);
+  }
 })();
 </script>
 </body>
