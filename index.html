@@ -298,10 +298,22 @@ input:focus,select:focus,textarea:focus{
   box-shadow:0 0 0 4px rgba(239,0,24,.08);
 }
 .mini-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.inline-code-grid{
+  display:grid;
+  grid-template-columns:minmax(90px,120px) minmax(0,1fr);
+  gap:10px;
+}
+.short-code{
+  max-width:120px;
+  text-align:left;
+}
 .pill:hover,.action:hover{filter:brightness(.96)}
 .hidden-field{display:none!important}
 .table-wrap{overflow:auto;border:1px solid var(--line);background:#fff}
 table{width:100%;border-collapse:collapse;min-width:520px}
+.bill-table{min-width:0}
+.bill-table th:first-child,.bill-table td:first-child{width:42%}
+.bill-table th:last-child,.bill-table td:last-child{width:58%}
 th{background:#9b9b9b;color:#fff;text-align:center;padding:14px;font-weight:900}
 td{border:1px solid var(--line);padding:10px 12px;vertical-align:middle}
 td:first-child{font-weight:900}
@@ -531,6 +543,10 @@ td.number{text-align:right}
   }
   .field-row label{grid-column:1/-1}
   .field-row input,.field-row select,.field-row textarea,.field-row .mini-grid{grid-column:1/2}
+  .inline-code-grid{
+    grid-template-columns:minmax(78px,96px) minmax(0,1fr);
+  }
+  .short-code{max-width:96px}
   .bottom-bar{min-height:64px}
 }
 </style>
@@ -696,8 +712,8 @@ td.number{text-align:right}
       <div class="form-grid">
         <div class="field-row full">
           <label for="symptom" class="required">現象名</label>
-          <div class="mini-grid">
-            <input type="text" id="symptomCode" data-label="現象名コード" placeholder="コード">
+          <div class="inline-code-grid">
+            <input class="short-code" type="text" id="symptomCode" data-label="現象名コード" maxlength="6" inputmode="numeric">
             <input type="text" id="symptom" data-label="現象名">
           </div>
         </div>
@@ -707,28 +723,46 @@ td.number{text-align:right}
             <option value=""></option>
             <option>常時</option>
             <option>時々</option>
-            <option>再現せず</option>
+            <option>時間が経つと</option>
+            <option>始動時</option>
+            <option>停止時</option>
+            <option>気温上昇時</option>
+            <option>気温低下時</option>
+            <option>ショック時</option>
+            <option>その他の条件時</option>
           </select>
         </div>
         <div class="field-row full">
           <label for="repairCategory" class="required">修理内容区分</label>
           <select id="repairCategory" data-label="修理内容区分">
             <option value=""></option>
-            <option>部品交換</option>
-            <option>調整</option>
-            <option>清掃</option>
-            <option>説明</option>
-            <option>点検</option>
+            <option>通常修理</option>
+            <option>事故処置</option>
+            <option>キャビ値引き</option>
+            <option>ヘルツ交換</option>
+            <option>保守点検</option>
+            <option>保守修理</option>
+            <option>在庫品整備</option>
+            <option>定額修理</option>
+            <option>点検その他</option>
           </select>
         </div>
         <div class="field-row">
           <label for="treatmentCategory" class="required">処置内容区分</label>
           <select id="treatmentCategory" data-label="処置内容区分">
             <option value=""></option>
-            <option>交換</option>
-            <option>修正</option>
-            <option>再設定</option>
-            <option>説明済</option>
+            <option>部品交換</option>
+            <option>調整</option>
+            <option>手直し</option>
+            <option>説明</option>
+            <option>修理交換（制度）</option>
+            <option>SQ3解約</option>
+            <option>現象確認出来ず</option>
+            <option>見積り完了</option>
+            <option>キャビ値引き</option>
+            <option>G2滅却</option>
+            <option>診断のみ</option>
+            <option>訪問のみ</option>
           </select>
         </div>
         <div class="field-row">
@@ -742,7 +776,28 @@ td.number{text-align:right}
         </div>
         <div class="field-row full wide-label">
           <label for="treatmentDetail" class="required">処置内容詳細</label>
-          <textarea id="treatmentDetail" data-label="処置内容詳細"></textarea>
+          <select id="treatmentDetail" data-label="処置内容詳細">
+            <option value=""></option>
+            <option>部品交換</option>
+            <option>半田付け手直し</option>
+            <option>配管手直し</option>
+            <option>ヘッド清掃</option>
+            <option>ドレン清掃</option>
+            <option>取扱説明</option>
+            <option>現象再現せず</option>
+            <option>見積り後修理キャンセル</option>
+            <option>ガスチャージ</option>
+            <option>配管手直し</option>
+            <option>代品交換</option>
+            <option>買い替え希望</option>
+            <option>点検</option>
+            <option>返金</option>
+            <option>転居</option>
+            <option>拒否</option>
+            <option>HDD消去了承</option>
+            <option>保証限度額超過分直収</option>
+            <option>補設置</option>
+          </select>
         </div>
         <div class="field-row full wide-label">
           <label for="contactToClient">連絡事項<br>（サービス→依頼元）</label>
@@ -801,9 +856,9 @@ td.number{text-align:right}
         </div>
         <div class="field-row">
           <label for="claimCode">請求先コード</label>
-          <div class="mini-grid">
-            <input type="text" id="claimCode" data-label="請求先コード1" placeholder="9990">
-            <input type="text" id="claimSubCode" data-label="請求先コード2" placeholder="3280">
+          <div class="inline-code-grid">
+            <input class="short-code" type="text" id="claimCode" data-label="請求先コード1" maxlength="6" inputmode="numeric">
+            <input class="short-code" type="text" id="claimSubCode" data-label="請求先コード2" maxlength="6" inputmode="numeric">
           </div>
         </div>
         <div class="field-row full">
@@ -822,16 +877,21 @@ td.number{text-align:right}
           <label for="freeReason">無償理由区分</label>
           <select id="freeReason" data-label="無償理由区分">
             <option value=""></option>
-            <option>メーカー保証</option>
-            <option>販売店保証</option>
-            <option>特別対応</option>
-            <option>再修理</option>
+            <option>修理保証</option>
+            <option>サ事通等連絡分</option>
+            <option>工場指示</option>
+            <option>工場責任による部品遅延</option>
+            <option>事故処置打ち切り直後</option>
+            <option>繰り返し故障の為</option>
+            <option>保証期間切れ直後</option>
+            <option>特殊事情による難クレーム</option>
+            <option>アンケート抑止</option>
           </select>
         </div>
       </div>
       <h2 class="section-title" style="margin-top:28px">金額明細</h2>
       <div class="table-wrap">
-        <table>
+        <table class="bill-table">
           <thead>
             <tr>
               <th>明細区分</th>
@@ -1275,6 +1335,11 @@ td.number{text-align:right}
         "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+"\" value=\"0\"></td>";
       body.appendChild(tr);
     });
+    var detailRow = document.createElement("tr");
+    detailRow.innerHTML =
+      "<td>その他1、2詳細</td>"+
+      "<td><input type=\"text\" id=\"otherDetail\" data-label=\"その他1、2詳細\"></td>";
+    body.appendChild(detailRow);
   }
   function updateBillTotals(){
     renderDisplayMode();
@@ -1449,16 +1514,17 @@ td.number{text-align:right}
       symptomCode: "2HF",
       symptom: "液晶画面が表示しない",
       frequency: "常時",
-      repairCategory: "部品交換",
-      treatmentCategory: "交換",
-      treatmentDetail: "症状確認後、対象部品を交換。動作確認を実施し正常復帰を確認。",
+      repairCategory: "通常修理",
+      treatmentCategory: "部品交換",
+      treatmentDetail: "部品交換",
       contactToClient: "作業完了。再発時は点検履歴を参照してください。",
       periodType: "期間内",
       claimCode: "9990",
       claimSubCode: "3280",
       claimName: "本社諸口（無償）",
       reportSend: "不要",
-      freeReason: "メーカー保証",
+      freeReason: "修理保証",
+      otherDetail: "その他明細なし",
       bill0Own: "0",
       bill1Own: "0",
       bill5Own: "1900",
