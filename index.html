@@ -158,13 +158,21 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .invoice-card{
   position:relative;
   min-width:150px;
-  padding:12px 18px;
+  padding:10px 12px;
   border:5px solid #ffd0db;
   background:#fff;
   text-align:center;
   font-weight:800;
 }
 .invoice-card span{display:block;color:var(--red);font-size:13px;margin-bottom:7px}
+.invoice-card select{
+  width:100%;
+  min-height:38px;
+  padding:7px 28px 7px 10px;
+  border-radius:6px;
+  font-weight:900;
+  text-align:center;
+}
 .invoice-card.active:after{
   content:"";
   position:absolute;
@@ -177,7 +185,21 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
   border-bottom:5px solid #ffd0db;
   background:#fff;
 }
-.invoice-add{min-width:150px;border:5px solid #eee;background:#fff;color:#aaa;font-size:18px;font-weight:800}
+.invoice-add{
+  min-width:170px;
+  border:5px solid #eee;
+  background:#fff;
+  color:#aaa;
+  padding:10px;
+}
+.invoice-add select{
+  width:100%;
+  min-height:40px;
+  border:0;
+  background:#fff;
+  color:#777;
+  font-weight:900;
+}
 .tabs{
   position:sticky;
   top:42px;
@@ -216,6 +238,20 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .display-panel{display:none;max-width:1180px;margin:0 auto;background:#fff;padding:18px;border-left:5px solid #ffd2dc;border-right:5px solid #ffd2dc}
 .display-panel.active{display:block}
 .copy-grid{display:grid;gap:16px}
+.copy-invoice{
+  display:grid;
+  gap:14px;
+  border:1px solid #ffd2dc;
+  border-radius:10px;
+  padding:14px;
+  background:#fff;
+}
+.copy-invoice-title{
+  margin:0;
+  color:#222;
+  font-size:18px;
+  font-weight:900;
+}
 .copy-section{
   display:grid;
   gap:8px;
@@ -575,9 +611,9 @@ td.number{text-align:right}
     </div>
   </section>
 
-  <section class="invoice-strip">
+  <section class="invoice-strip" id="invoiceStrip">
     <div class="invoice-card active"><span>請求先 1</span>無償</div>
-    <button class="invoice-add" type="button">+ 請求先追加</button>
+    <div class="invoice-add">+ 請求先追加</div>
   </section>
 
   <nav class="tabs" aria-label="フォームタブ">
@@ -974,10 +1010,13 @@ td.number{text-align:right}
   var dirty = false;
   var toastTimer = null;
   var currentTab = "main";
+  var BILLING_TYPES = ["無償","依頼元請求","現金売掛","自家負担","請求先指定","SA直収","QR決済","請求委託（請求書発行）"];
   var cloud = { app: null, db: null, ready: false, modules: null };
   var billRows = [
     "技術料1","技術料2","技術料3","技術料4","部品代","出張料1","出張料2","その他1","その他2","値引き"
   ];
+  var invoices = [{ type: "無償", data: {} }];
+  var currentInvoiceIndex = 0;
   var partRows = [];
 
   try{
@@ -1179,31 +1218,60 @@ td.number{text-align:right}
   function setDirty(value){
     dirty = value;
   }
-  function collectData(){
+  function collectCurrentFormData(){
     var data = {};
     fieldEls().forEach(function(el){ data[el.id] = el.value; });
     data.__parts = partRows;
     return data;
   }
-  function applyData(data){
+  function saveActiveInvoiceData(){
+    if(!invoices[currentInvoiceIndex]) return;
+    invoices[currentInvoiceIndex].data = collectCurrentFormData();
+  }
+  function applyCurrentFormData(data){
     if(!data || typeof data !== "object") return;
     fieldEls().forEach(function(el){
       if(Object.prototype.hasOwnProperty.call(data, el.id)) el.value = data[el.id];
+      else if(el.tagName === "SELECT") el.selectedIndex = 0;
+      else if(el.type === "number") el.value = "0";
+      else el.value = "";
     });
     partRows = Array.isArray(data.__parts) ? data.__parts.slice() : [];
     renderParts();
     syncHeader();
+  }
+  function collectData(){
+    saveActiveInvoiceData();
+    return {
+      __schema: "invoiceSheetsV1",
+      currentInvoiceIndex: currentInvoiceIndex,
+      invoices: invoices.map(function(inv){
+        return { type: inv.type || "無償", data: inv.data || {} };
+      })
+    };
+  }
+  function applyData(data){
+    if(!data || typeof data !== "object") return;
+    if(Array.isArray(data.__invoices) || data.__schema === "invoiceSheetsV1"){
+      var source = Array.isArray(data.__invoices) ? data.__invoices : data.invoices;
+      invoices = source.map(function(inv){
+        return { type: inv.type || "無償", data: inv.data || {} };
+      });
+      if(!invoices.length) invoices = [{ type: "無償", data: {} }];
+      currentInvoiceIndex = Math.min(Math.max(Number(data.currentInvoiceIndex) || 0, 0), invoices.length - 1);
+    }else{
+      invoices = [{ type: "無償", data: data }];
+      currentInvoiceIndex = 0;
+    }
+    renderInvoiceStrip();
+    applyCurrentFormData(invoices[currentInvoiceIndex].data || {});
     setDirty(false);
   }
   function clearData(){
-    fieldEls().forEach(function(el){
-      if(el.tagName === "SELECT") el.selectedIndex = 0;
-      else if(el.type === "number") el.value = "0";
-      else el.value = "";
-    });
-    partRows = [];
-    renderParts();
-    syncHeader();
+    invoices = [{ type: "無償", data: {} }];
+    currentInvoiceIndex = 0;
+    renderInvoiceStrip();
+    applyCurrentFormData({});
     setDirty(true);
   }
   function syncHeader(){
@@ -1232,6 +1300,51 @@ td.number{text-align:right}
     var el = $(id);
     return el ? el.value : "";
   }
+  function optionHtml(selectedValue, includeAddLabel){
+    var html = includeAddLabel ? "<option value=\"\">+ 請求先追加</option>" : "";
+    BILLING_TYPES.forEach(function(type){
+      html += "<option" + (type === selectedValue ? " selected" : "") + ">" + type + "</option>";
+    });
+    return html;
+  }
+  function renderInvoiceStrip(){
+    var strip = $("invoiceStrip");
+    if(!strip) return;
+    strip.innerHTML = "";
+    invoices.forEach(function(inv, i){
+      var card = document.createElement("div");
+      card.className = "invoice-card" + (i === currentInvoiceIndex ? " active" : "");
+      card.setAttribute("data-invoice-index", i);
+      card.innerHTML = "<span>請求先 " + (i + 1) + "</span><select data-invoice-type=\"" + i + "\">" + optionHtml(inv.type || "無償", false) + "</select>";
+      card.addEventListener("click", function(ev){
+        if(ev.target.tagName === "SELECT") return;
+        switchInvoice(i);
+      });
+      strip.appendChild(card);
+    });
+    var add = document.createElement("div");
+    add.className = "invoice-add";
+    add.innerHTML = "<select id=\"invoiceAddSelect\" aria-label=\"請求先追加\">" + optionHtml("", true) + "</select>";
+    strip.appendChild(add);
+  }
+  function switchInvoice(index){
+    if(index === currentInvoiceIndex || !invoices[index]) return;
+    saveActiveInvoiceData();
+    currentInvoiceIndex = index;
+    renderInvoiceStrip();
+    applyCurrentFormData(invoices[currentInvoiceIndex].data || {});
+    applyFieldVisibility();
+    setDirty(true);
+  }
+  function addInvoice(type){
+    saveActiveInvoiceData();
+    invoices.push({ type: type || "無償", data: {} });
+    currentInvoiceIndex = invoices.length - 1;
+    renderInvoiceStrip();
+    applyCurrentFormData({});
+    applyFieldVisibility();
+    setDirty(true);
+  }
   function summaryForPanel(panel){
     var rows = [];
     all("[data-label]", panel).forEach(function(el){
@@ -1241,8 +1354,9 @@ td.number{text-align:right}
     });
     return rows.join("\n");
   }
-  function partsSummary(){
-    return partRows.map(function(p, i){
+  function partsSummary(rows){
+    rows = rows || partRows;
+    return rows.map(function(p, i){
       return (i+1)+". "+[p.billing,p.adjust,p.number,p.name,p.qty].filter(Boolean).join(" / ");
     }).join("\n");
   }
@@ -1250,48 +1364,63 @@ td.number{text-align:right}
     return $("panel-" + currentTab);
   }
   function valueItemsForPanel(panel){
+    return valueItemsForPanelData(panel, collectCurrentFormData());
+  }
+  function valueItemsForPanelData(panel, data){
     var items = [];
     all("[data-label]", panel).forEach(function(el){
       if(!isFieldVisible(el)) return;
-      var value = el.value;
+      var value = data[el.id] || "";
       if(value !== "" && value !== "0"){
         items.push({ label: el.getAttribute("data-label"), value: value });
       }
     });
-    if(panel.id === "panel-parts" && partRows.length){
-      items.push({ label: "交換部品一覧", value: partsSummary() });
+    if(panel.id === "panel-parts" && Array.isArray(data.__parts) && data.__parts.length){
+      items.push({ label: "交換部品一覧", value: partsSummary(data.__parts) });
     }
     return items;
   }
   function renderDisplayMode(){
     var grid = $("copyGrid");
     if(!grid) return;
+    saveActiveInvoiceData();
     grid.innerHTML = "";
     var panels = ["panel-main","panel-product","panel-report","panel-parts","panel-bill"].map(function(id){ return $(id); }).filter(Boolean);
     var hasItems = false;
-    panels.forEach(function(panel){
-      var items = valueItemsForPanel(panel);
-      if(!items.length) return;
-      hasItems = true;
-      var section = document.createElement("section");
-      section.className = "copy-section";
-      var heading = document.createElement("h2");
-      heading.textContent = panel.getAttribute("data-title");
-      var list = document.createElement("div");
-      list.className = "copy-section-items";
-      items.forEach(function(item){
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "copy-card";
-        btn.innerHTML = "<strong></strong><span></span>";
-        btn.querySelector("strong").textContent = item.label;
-        btn.querySelector("span").textContent = item.value;
-        btn.addEventListener("click", function(){ copyText(item.value); });
-        list.appendChild(btn);
+    invoices.forEach(function(inv, invoiceIndex){
+      var invoiceWrap = document.createElement("section");
+      invoiceWrap.className = "copy-invoice";
+      var invoiceTitle = document.createElement("h2");
+      invoiceTitle.className = "copy-invoice-title";
+      invoiceTitle.textContent = "請求先" + (invoiceIndex + 1) + "（" + (inv.type || "無償") + "）";
+      invoiceWrap.appendChild(invoiceTitle);
+      var invoiceHasItems = false;
+      panels.forEach(function(panel){
+        var items = valueItemsForPanelData(panel, inv.data || {});
+        if(!items.length) return;
+        invoiceHasItems = true;
+        hasItems = true;
+        var section = document.createElement("section");
+        section.className = "copy-section";
+        var heading = document.createElement("h2");
+        heading.textContent = panel.getAttribute("data-title");
+        var list = document.createElement("div");
+        list.className = "copy-section-items";
+        items.forEach(function(item){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "copy-card";
+          btn.innerHTML = "<strong></strong><span></span>";
+          btn.querySelector("strong").textContent = item.label;
+          btn.querySelector("span").textContent = item.value;
+          btn.addEventListener("click", function(){ copyText(item.value); });
+          list.appendChild(btn);
+        });
+        section.appendChild(heading);
+        section.appendChild(list);
+        invoiceWrap.appendChild(section);
       });
-      section.appendChild(heading);
-      section.appendChild(list);
-      grid.appendChild(section);
+      if(invoiceHasItems) grid.appendChild(invoiceWrap);
     });
     if(!hasItems){
       var empty = document.createElement("div");
@@ -1422,6 +1551,7 @@ td.number{text-align:right}
   function savePreset(forceCopy){
     var name = $("presetName").value.trim();
     if(!name){ toast("プリセット名を入力してください"); return; }
+    saveActiveInvoiceData();
     var presets = loadPresets();
     var existing = presets.findIndex(function(p){ return p.name === name; });
     var data = collectData();
@@ -1532,6 +1662,8 @@ td.number{text-align:right}
         {billing:"請求先1", adjust:"", number:"ABC-123", name:"表示基板", qty:"1"}
       ]
     });
+    invoices[0].type = "無償";
+    renderInvoiceStrip();
     updateBillTotals();
     setDirty(true);
     toast("サンプルを入力しました");
@@ -1539,6 +1671,7 @@ td.number{text-align:right}
 
   renderBill();
   renderParts();
+  renderInvoiceStrip();
   updateBillTotals();
   applyFieldVisibility();
   $("doneAt").value = nowText();
@@ -1560,6 +1693,25 @@ td.number{text-align:right}
     }
   });
   document.addEventListener("change", function(ev){
+    if(ev.target.matches("[data-invoice-type]")){
+      var invoiceIndex = Number(ev.target.getAttribute("data-invoice-type"));
+      if(invoices[invoiceIndex]){
+        invoices[invoiceIndex].type = ev.target.value || "無償";
+        if(invoiceIndex === currentInvoiceIndex){
+          saveActiveInvoiceData();
+          renderInvoiceStrip();
+          setDirty(true);
+        }else{
+          switchInvoice(invoiceIndex);
+        }
+        renderDisplayMode();
+      }
+      return;
+    }
+    if(ev.target.id === "invoiceAddSelect"){
+      if(ev.target.value) addInvoice(ev.target.value);
+      return;
+    }
     if(ev.target.matches("[data-label]")){
       setDirty(true);
       syncHeader();
@@ -1643,7 +1795,7 @@ td.number{text-align:right}
     });
   }
   $("btnAddPart").addEventListener("click", function(){
-    partRows.push({billing:"請求先1", adjust:"", number:"", name:"", qty:"1"});
+    partRows.push({billing:"請求先" + (currentInvoiceIndex + 1), adjust:"", number:"", name:"", qty:"1"});
     renderParts();
     setDirty(true);
   });
