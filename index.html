@@ -172,7 +172,60 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
   border-radius:6px;
   font-weight:900;
   text-align:center;
+  text-align-last:center;
 }
+.invoice-card option{text-align:center}
+.invoice-type-label{
+  width:100%;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  background:#f7f7f8;
+  font-weight:900;
+  text-align:center;
+}
+.multi-reason{
+  display:grid;
+  gap:6px;
+  margin-top:10px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+}
+.multi-reason span{
+  margin:0;
+  color:var(--muted);
+  font-size:11px;
+}
+.invoice-reason-label{
+  display:grid;
+  gap:4px;
+  margin-top:8px;
+  padding:8px;
+  border-radius:6px;
+  background:#fff1f4;
+  color:#333;
+  font-size:12px;
+  line-height:1.35;
+  text-align:center;
+}
+.invoice-reason-label small{
+  color:var(--red);
+  font-weight:900;
+}
+.invoice-delete{
+  width:100%;
+  margin-top:10px;
+  border:1px solid #ffc4cc;
+  border-radius:6px;
+  min-height:34px;
+  background:#fff0f2;
+  color:var(--red-dark);
+  font-weight:900;
+}
+.invoice-delete:hover{background:#ffe3e8}
 .invoice-card.active:after{
   content:"";
   position:absolute;
@@ -251,6 +304,12 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
   color:#222;
   font-size:18px;
   font-weight:900;
+}
+.copy-invoice-reason{
+  margin-top:-6px;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:800;
 }
 .copy-section{
   display:grid;
@@ -1011,11 +1070,21 @@ td.number{text-align:right}
   var toastTimer = null;
   var currentTab = "main";
   var BILLING_TYPES = ["無償","依頼元請求","現金売掛","自家負担","請求先指定","SA直収","QR決済","請求委託（請求書発行）"];
+  var MULTI_REASON_TYPES = [
+    "販売店",
+    "長期保証制度による顧客との費用案分",
+    "サービスコール処置など無償請求案分",
+    "値引きのため",
+    "依頼元指示による複数請求",
+    "SC指示による複数請求",
+    "顧客購入部品持参",
+    "その他（理由明記のこと）"
+  ];
   var cloud = { app: null, db: null, ready: false, modules: null };
   var billRows = [
     "技術料1","技術料2","技術料3","技術料4","部品代","出張料1","出張料2","その他1","その他2","値引き"
   ];
-  var invoices = [{ type: "無償", data: {} }];
+  var invoices = [{ type: "無償", reason: "", data: {} }];
   var currentInvoiceIndex = 0;
   var partRows = [];
 
@@ -1246,7 +1315,7 @@ td.number{text-align:right}
       __schema: "invoiceSheetsV1",
       currentInvoiceIndex: currentInvoiceIndex,
       invoices: invoices.map(function(inv){
-        return { type: inv.type || "無償", data: inv.data || {} };
+        return { type: inv.type || "無償", reason: inv.reason || "", data: inv.data || {} };
       })
     };
   }
@@ -1255,12 +1324,12 @@ td.number{text-align:right}
     if(Array.isArray(data.__invoices) || data.__schema === "invoiceSheetsV1"){
       var source = Array.isArray(data.__invoices) ? data.__invoices : data.invoices;
       invoices = source.map(function(inv){
-        return { type: inv.type || "無償", data: inv.data || {} };
+        return { type: inv.type || "無償", reason: inv.reason || "", data: inv.data || {} };
       });
-      if(!invoices.length) invoices = [{ type: "無償", data: {} }];
+      if(!invoices.length) invoices = [{ type: "無償", reason: "", data: {} }];
       currentInvoiceIndex = Math.min(Math.max(Number(data.currentInvoiceIndex) || 0, 0), invoices.length - 1);
     }else{
-      invoices = [{ type: "無償", data: data }];
+      invoices = [{ type: "無償", reason: "", data: data }];
       currentInvoiceIndex = 0;
     }
     renderInvoiceStrip();
@@ -1268,7 +1337,7 @@ td.number{text-align:right}
     setDirty(false);
   }
   function clearData(){
-    invoices = [{ type: "無償", data: {} }];
+    invoices = [{ type: "無償", reason: "", data: {} }];
     currentInvoiceIndex = 0;
     renderInvoiceStrip();
     applyCurrentFormData({});
@@ -1307,21 +1376,40 @@ td.number{text-align:right}
     });
     return html;
   }
+  function reasonOptionHtml(selectedValue){
+    var html = "<option value=\"\">選択してください</option>";
+    MULTI_REASON_TYPES.forEach(function(type){
+      html += "<option" + (type === selectedValue ? " selected" : "") + ">" + type + "</option>";
+    });
+    return html;
+  }
   function renderInvoiceStrip(){
     var strip = $("invoiceStrip");
     if(!strip) return;
+    var viewMode = document.body.classList.contains("view-mode");
     strip.innerHTML = "";
     invoices.forEach(function(inv, i){
       var card = document.createElement("div");
       card.className = "invoice-card" + (i === currentInvoiceIndex ? " active" : "");
       card.setAttribute("data-invoice-index", i);
-      card.innerHTML = "<span>請求先 " + (i + 1) + "</span><select data-invoice-type=\"" + i + "\">" + optionHtml(inv.type || "無償", false) + "</select>";
-      card.addEventListener("click", function(ev){
-        if(ev.target.tagName === "SELECT") return;
-        switchInvoice(i);
-      });
+      if(viewMode){
+        card.innerHTML =
+          "<span>請求先 " + (i + 1) + "</span>"+
+          "<div class=\"invoice-type-label\">" + escapeAttr(inv.type || "無償") + "</div>"+
+          (i > 0 && inv.reason ? "<div class=\"invoice-reason-label\"><small>複数請求理由</small>" + escapeAttr(inv.reason) + "</div>" : "");
+      }else{
+        card.innerHTML =
+          "<span>請求先 " + (i + 1) + "</span>"+
+          "<select data-invoice-type=\"" + i + "\">" + optionHtml(inv.type || "無償", false) + "</select>"+
+          (i > 0 ? "<label class=\"multi-reason\"><span>複数請求理由</span><select data-invoice-reason=\"" + i + "\">" + reasonOptionHtml(inv.reason || "") + "</select></label><button class=\"invoice-delete\" type=\"button\" data-delete-invoice=\"" + i + "\">請求先" + (i + 1) + "を削除</button>" : "");
+        card.addEventListener("click", function(ev){
+          if(ev.target.tagName === "SELECT" || ev.target.tagName === "BUTTON") return;
+          switchInvoice(i);
+        });
+      }
       strip.appendChild(card);
     });
+    if(viewMode) return;
     var add = document.createElement("div");
     add.className = "invoice-add";
     add.innerHTML = "<select id=\"invoiceAddSelect\" aria-label=\"請求先追加\">" + optionHtml("", true) + "</select>";
@@ -1338,12 +1426,28 @@ td.number{text-align:right}
   }
   function addInvoice(type){
     saveActiveInvoiceData();
-    invoices.push({ type: type || "無償", data: {} });
+    invoices.push({ type: type || "無償", reason: "", data: {} });
     currentInvoiceIndex = invoices.length - 1;
     renderInvoiceStrip();
     applyCurrentFormData({});
     applyFieldVisibility();
     setDirty(true);
+  }
+  function deleteInvoice(index){
+    if(index <= 0 || !invoices[index]) return;
+    confirmDialog("請求先" + (index + 1) + "を削除しますか？", function(){
+      saveActiveInvoiceData();
+      invoices.splice(index, 1);
+      if(currentInvoiceIndex > index) currentInvoiceIndex--;
+      if(currentInvoiceIndex >= invoices.length) currentInvoiceIndex = invoices.length - 1;
+      if(currentInvoiceIndex < 0) currentInvoiceIndex = 0;
+      renderInvoiceStrip();
+      applyCurrentFormData(invoices[currentInvoiceIndex].data || {});
+      applyFieldVisibility();
+      renderDisplayMode();
+      setDirty(true);
+      toast("請求先を削除しました");
+    });
   }
   function summaryForPanel(panel){
     var rows = [];
@@ -1394,7 +1498,14 @@ td.number{text-align:right}
       invoiceTitle.className = "copy-invoice-title";
       invoiceTitle.textContent = "請求先" + (invoiceIndex + 1) + "（" + (inv.type || "無償") + "）";
       invoiceWrap.appendChild(invoiceTitle);
-      var invoiceHasItems = false;
+      if(invoiceIndex > 0 && inv.reason){
+        var reason = document.createElement("div");
+        reason.className = "copy-invoice-reason";
+        reason.textContent = "複数請求理由：" + inv.reason;
+        invoiceWrap.appendChild(reason);
+      }
+      var invoiceHasItems = invoiceIndex > 0 && !!inv.reason;
+      if(invoiceHasItems) hasItems = true;
       panels.forEach(function(panel){
         var items = valueItemsForPanelData(panel, inv.data || {});
         if(!items.length) return;
@@ -1434,6 +1545,7 @@ td.number{text-align:right}
     $("modeToggle").checked = editing;
     $("modeText").textContent = editing ? "編集モード" : "表示モード";
     if(persist && storageOK) localStorage.setItem(MODE_KEY, editing ? "edit" : "view");
+    renderInvoiceStrip();
     renderDisplayMode();
   }
   function saveDraft(){
@@ -1708,6 +1820,21 @@ td.number{text-align:right}
       }
       return;
     }
+    if(ev.target.matches("[data-invoice-reason]")){
+      var reasonIndex = Number(ev.target.getAttribute("data-invoice-reason"));
+      if(invoices[reasonIndex]){
+        invoices[reasonIndex].reason = ev.target.value || "";
+        if(reasonIndex === currentInvoiceIndex){
+          saveActiveInvoiceData();
+          renderInvoiceStrip();
+          setDirty(true);
+        }else{
+          switchInvoice(reasonIndex);
+        }
+        renderDisplayMode();
+      }
+      return;
+    }
     if(ev.target.id === "invoiceAddSelect"){
       if(ev.target.value) addInvoice(ev.target.value);
       return;
@@ -1720,6 +1847,11 @@ td.number{text-align:right}
     }
   });
   document.addEventListener("click", function(ev){
+    var deleteInvoiceIndex = ev.target.getAttribute("data-delete-invoice");
+    if(deleteInvoiceIndex){
+      deleteInvoice(Number(deleteInvoiceIndex));
+      return;
+    }
     var loadId = ev.target.getAttribute("data-load-preset");
     if(loadId){
       var p = loadPresets().find(function(x){ return x.id === loadId; });
