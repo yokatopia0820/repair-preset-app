@@ -48,10 +48,27 @@ button{cursor:pointer}
   align-items:center;
   justify-content:center;
   padding:10px 14px;
+  position:relative;
 }
 .title-wrap{display:flex;align-items:center;justify-content:center;min-width:0}
 .back,.subtitle,.hero-actions{display:none}
 h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
+.settings-btn{
+  position:absolute;
+  right:8px;
+  top:50%;
+  width:36px;
+  height:36px;
+  transform:translateY(-50%);
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+  line-height:1;
+}
+.settings-btn:hover{background:rgba(255,255,255,.26)}
 .pill{
   border:0;
   border-radius:999px;
@@ -66,16 +83,14 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .casebar{
   max-width:1180px;
   margin:0 auto;
-  padding:18px 18px 12px;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:18px;
+  padding:10px 18px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
   align-items:center;
   background:#fff;
   border-bottom:1px solid var(--line);
 }
-.case-title{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:18px}
-.case-title strong{font-weight:800}
 .manager{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .mode-control{
   display:flex;
@@ -225,7 +240,7 @@ body.view-mode .edit-only{display:none!important}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
 .field-row{
   display:grid;
-  grid-template-columns:190px minmax(0,1fr) auto;
+  grid-template-columns:190px minmax(0,1fr);
   gap:12px;
   align-items:center;
   min-height:62px;
@@ -233,7 +248,7 @@ body.view-mode .edit-only{display:none!important}
   padding:8px 0;
 }
 .field-row.full{grid-column:1/-1}
-.field-row.wide-label{grid-template-columns:250px minmax(0,1fr) auto}
+.field-row.wide-label{grid-template-columns:250px minmax(0,1fr)}
 .field-row.no-line{border-bottom:0}
 label{
   color:var(--muted);
@@ -258,21 +273,11 @@ input:focus,select:focus,textarea:focus{
   outline-color:#ffb6c2;
   box-shadow:0 0 0 4px rgba(239,0,24,.08);
 }
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.copy-btn{
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:999px;
-  background:#1e1e1e;
-  color:#fff;
-  font-size:12px;
-  font-weight:900;
-}
-.copy-btn:hover,.pill:hover,.action:hover{filter:brightness(.96)}
-.ghost-copy{visibility:hidden}
+.mini-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.pill:hover,.action:hover{filter:brightness(.96)}
+.hidden-field{display:none!important}
 .table-wrap{overflow:auto;border:1px solid var(--line);background:#fff}
-table{width:100%;border-collapse:collapse;min-width:760px}
+table{width:100%;border-collapse:collapse;min-width:520px}
 th{background:#9b9b9b;color:#fff;text-align:center;padding:14px;font-weight:900}
 td{border:1px solid var(--line);padding:10px 12px;vertical-align:middle}
 td:first-child{font-weight:900}
@@ -372,6 +377,35 @@ td.number{text-align:right}
 .sync-grid textarea{grid-column:1/-1;min-height:86px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
 .sync-actions{display:flex;gap:10px;flex-wrap:wrap}
 .sync-state{font-size:12px;color:var(--muted);font-weight:800;margin-top:10px}
+.settings-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.setting-check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  font-weight:800;
+  color:#333;
+}
+.setting-check input{
+  width:20px;
+  min-height:20px;
+  flex:0 0 auto;
+  accent-color:var(--red);
+}
+.setting-check span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 .badge{
   display:inline-flex;
   align-items:center;
@@ -439,7 +473,7 @@ td.number{text-align:right}
 .confirm-actions{display:flex;gap:10px}
 .confirm-actions button{flex:1}
 @media (max-width:860px){
-  .casebar{grid-template-columns:1fr}
+  .casebar{display:block}
   .manager{justify-content:stretch}
   .manager .action{flex:1}
   .tabs{top:42px}
@@ -447,9 +481,10 @@ td.number{text-align:right}
   .display-panel{border-left:0;border-right:0}
   .tab-panel{padding:16px}
   .form-grid{grid-template-columns:1fr}
-  .field-row,.field-row.wide-label{grid-template-columns:118px minmax(0,1fr) auto}
+  .field-row,.field-row.wide-label{grid-template-columns:118px minmax(0,1fr)}
   .preset-tools,.preset-tools.simple-tools,.backup-row,.search-row{grid-template-columns:1fr}
   .sync-grid{grid-template-columns:1fr}
+  .settings-list{grid-template-columns:1fr}
   .preset-item{grid-template-columns:1fr 1fr 1fr}
   .preset-info{grid-column:1/-1}
 }
@@ -458,7 +493,6 @@ td.number{text-align:right}
   h1{font-size:18px}
   h1{font-size:16px}
   .hero{padding:8px 10px}
-  .case-title{font-size:15px;gap:10px}
   .casebar{padding:10px 12px}
   .manager{gap:8px}
   .mode-control{width:100%;justify-content:space-between}
@@ -467,14 +501,12 @@ td.number{text-align:right}
   .tab{min-height:44px;font-size:11px;padding:7px 2px;letter-spacing:0}
   .copy-grid{grid-template-columns:1fr}
   .field-row,.field-row.wide-label{
-    grid-template-columns:1fr auto;
+    grid-template-columns:1fr;
     gap:8px;
     padding:12px 0;
   }
   .field-row label{grid-column:1/-1}
   .field-row input,.field-row select,.field-row textarea,.field-row .mini-grid{grid-column:1/2}
-  .copy-btn{grid-column:2/3;grid-row:2/3}
-  .ghost-copy{display:none}
   .bottom-bar{min-height:64px}
 }
 </style>
@@ -488,15 +520,11 @@ td.number{text-align:right}
           <h1>完了報告 入力プリセット</h1>
         </div>
       </div>
+      <button class="settings-btn" id="btnSettings" type="button" aria-label="設定" title="設定">⚙</button>
     </div>
   </header>
 
   <section class="casebar">
-    <div class="case-title">
-      <span>No.<strong id="caseNo">W00664</strong></span>
-      <span><strong id="caseCustomer">富永 美保</strong>様</span>
-      <span id="draftState">未保存の変更なし</span>
-    </div>
     <div class="manager">
       <label class="mode-control">
         <span id="modeText">編集モード</span>
@@ -526,27 +554,22 @@ td.number{text-align:right}
         <div class="field-row full">
           <label for="doneAt">完了日</label>
           <input type="text" id="doneAt" data-label="完了日" placeholder="2026/05/14 18:28">
-          <button class="copy-btn" data-copy="doneAt" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="customerName">お客様名</label>
           <input type="text" id="customerName" data-label="お客様名" placeholder="富永　美保">
-          <button class="copy-btn" data-copy="customerName" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="model">型式</label>
           <input type="text" id="model" data-label="型式" placeholder="BDSTX120HR">
-          <button class="copy-btn" data-copy="model" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="serial">製造番号</label>
           <input type="text" id="serial" data-label="製造番号" placeholder="2501456">
-          <button class="copy-btn" data-copy="serial" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="color">製品色</label>
           <input type="text" id="color" data-label="製品色">
-          <button class="copy-btn" data-copy="color" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="factory">工場名称</label>
@@ -556,12 +579,10 @@ td.number{text-align:right}
             <option>330：（空調）</option>
             <option>340：（住設）</option>
           </select>
-          <button class="copy-btn" data-copy="factory" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="faultCode">事故処置コード</label>
           <input type="text" id="faultCode" data-label="事故処置コード" placeholder="2HF">
-          <button class="copy-btn" data-copy="faultCode" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="deliveryType">納品区分</label>
@@ -571,7 +592,6 @@ td.number{text-align:right}
             <option>直送</option>
             <option>持参</option>
           </select>
-          <button class="copy-btn" data-copy="deliveryType" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="repairSales">保守・据付区分</label>
@@ -581,17 +601,14 @@ td.number{text-align:right}
             <option>据付売上</option>
             <option>点検</option>
           </select>
-          <button class="copy-btn" data-copy="repairSales" title="コピー">CP</button>
         </div>
         <div class="field-row full wide-label">
           <label for="internalNote">内部連絡事項</label>
           <textarea id="internalNote" data-label="内部連絡事項" placeholder="連絡事項、メール、受信日時など"></textarea>
-          <button class="copy-btn" data-copy="internalNote" title="コピー">CP</button>
         </div>
         <div class="field-row full wide-label">
           <label for="serviceNote">サービス注意事項</label>
           <textarea id="serviceNote" data-label="サービス注意事項"></textarea>
-          <button class="copy-btn" data-copy="serviceNote" title="コピー">CP</button>
         </div>
       </div>
     </section>
@@ -601,42 +618,34 @@ td.number{text-align:right}
         <div class="field-row">
           <label for="productModel">型式</label>
           <input type="text" id="productModel" data-label="型式">
-          <button class="copy-btn" data-copy="productModel" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="productName">商品名</label>
           <input type="text" id="productName" data-label="商品名" placeholder="全自洗">
-          <button class="copy-btn" data-copy="productName" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="purchaseDate">購入年月</label>
           <input type="text" id="purchaseDate" data-label="購入年月" placeholder="YYYY/MM">
-          <button class="copy-btn" data-copy="purchaseDate" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="startDate">製造開始年月</label>
           <input type="text" id="startDate" data-label="製造開始年月" placeholder="2022/08">
-          <button class="copy-btn" data-copy="startDate" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="endDate">製造終了年月</label>
           <input type="text" id="endDate" data-label="製造終了年月" placeholder="2023/10">
-          <button class="copy-btn" data-copy="endDate" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="partsWarranty">部品保有期間</label>
           <input type="text" id="partsWarranty" data-label="部品保有期間" placeholder="2029/10">
-          <button class="copy-btn" data-copy="partsWarranty" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="prevRepair1">前回修理年月</label>
           <input type="text" id="prevRepair1" data-label="前回修理年月">
-          <button class="copy-btn" data-copy="prevRepair1" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="prevSymptom1">現象名</label>
           <input type="text" id="prevSymptom1" data-label="前回現象名">
-          <button class="copy-btn" data-copy="prevSymptom1" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="extendedWarranty">延長保証</label>
@@ -646,17 +655,14 @@ td.number{text-align:right}
             <option>あり</option>
             <option>確認要</option>
           </select>
-          <button class="copy-btn" data-copy="extendedWarranty" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="extendedWarrantyNo">延長保証No</label>
           <input type="text" id="extendedWarrantyNo" data-label="延長保証No">
-          <button class="copy-btn" data-copy="extendedWarrantyNo" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="limitAmount">限度額</label>
           <input type="number" id="limitAmount" data-label="限度額" value="0">
-          <button class="copy-btn" data-copy="limitAmount" title="コピー">CP</button>
         </div>
       </div>
     </section>
@@ -670,7 +676,6 @@ td.number{text-align:right}
             <input type="text" id="symptomCode" data-label="現象名コード" placeholder="コード">
             <input type="text" id="symptom" data-label="現象名">
           </div>
-          <button class="copy-btn" data-copy="symptom" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="frequency" class="required">現象頻度</label>
@@ -680,7 +685,6 @@ td.number{text-align:right}
             <option>時々</option>
             <option>再現せず</option>
           </select>
-          <button class="copy-btn" data-copy="frequency" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="repairCategory" class="required">修理内容区分</label>
@@ -692,7 +696,6 @@ td.number{text-align:right}
             <option>説明</option>
             <option>点検</option>
           </select>
-          <button class="copy-btn" data-copy="repairCategory" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="treatmentCategory" class="required">処置内容区分</label>
@@ -703,7 +706,6 @@ td.number{text-align:right}
             <option>再設定</option>
             <option>説明済</option>
           </select>
-          <button class="copy-btn" data-copy="treatmentCategory" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="treatmentCode">処置コード</label>
@@ -713,17 +715,14 @@ td.number{text-align:right}
             <option>B02</option>
             <option>C03</option>
           </select>
-          <button class="copy-btn" data-copy="treatmentCode" title="コピー">CP</button>
         </div>
         <div class="field-row full wide-label">
           <label for="treatmentDetail" class="required">処置内容詳細</label>
           <textarea id="treatmentDetail" data-label="処置内容詳細"></textarea>
-          <button class="copy-btn" data-copy="treatmentDetail" title="コピー">CP</button>
         </div>
         <div class="field-row full wide-label">
           <label for="contactToClient">連絡事項<br>（サービス→依頼元）</label>
           <textarea id="contactToClient" data-label="連絡事項（サービス→依頼元）"></textarea>
-          <button class="copy-btn" data-copy="contactToClient" title="コピー">CP</button>
         </div>
       </div>
     </section>
@@ -748,7 +747,6 @@ td.number{text-align:right}
         <div class="field-row">
           <label for="installStatus">設置状況（技術料４）</label>
           <input type="text" id="installStatus" data-label="設置状況">
-          <button class="copy-btn" data-copy="installStatus" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="workerCount">作業人数（技術料３）</label>
@@ -758,7 +756,6 @@ td.number{text-align:right}
             <option>2名</option>
             <option>3名</option>
           </select>
-          <button class="copy-btn" data-copy="workerCount" title="コピー">CP</button>
         </div>
       </div>
       <div class="parts-actions">
@@ -777,7 +774,6 @@ td.number{text-align:right}
             <option>期間内</option>
             <option>期間外</option>
           </select>
-          <button class="copy-btn" data-copy="periodType" title="コピー">CP</button>
         </div>
         <div class="field-row">
           <label for="claimCode">請求先コード</label>
@@ -785,12 +781,10 @@ td.number{text-align:right}
             <input type="text" id="claimCode" data-label="請求先コード1" placeholder="9990">
             <input type="text" id="claimSubCode" data-label="請求先コード2" placeholder="3280">
           </div>
-          <button class="copy-btn" data-copy="claimCode" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="claimName">請求先名<br>（領収書宛名）</label>
           <input type="text" id="claimName" data-label="請求先名" placeholder="本社諸口（無償）">
-          <button class="copy-btn" data-copy="claimName" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="reportSend">完了報告書発送</label>
@@ -799,7 +793,6 @@ td.number{text-align:right}
             <option>不要</option>
             <option>発送する</option>
           </select>
-          <button class="copy-btn" data-copy="reportSend" title="コピー">CP</button>
         </div>
         <div class="field-row full">
           <label for="freeReason">無償理由区分</label>
@@ -810,7 +803,6 @@ td.number{text-align:right}
             <option>特別対応</option>
             <option>再修理</option>
           </select>
-          <button class="copy-btn" data-copy="freeReason" title="コピー">CP</button>
         </div>
       </div>
       <h2 class="section-title" style="margin-top:28px">金額明細</h2>
@@ -819,10 +811,7 @@ td.number{text-align:right}
           <thead>
             <tr>
               <th>明細区分</th>
-              <th>自拠点</th>
-              <th>後援拠点</th>
-              <th>合計</th>
-              <th>コピー</th>
+              <th>金額</th>
             </tr>
           </thead>
           <tbody id="billBody"></tbody>
@@ -863,6 +852,20 @@ td.number{text-align:right}
   </div>
 </div>
 
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal-head">
+    <div>
+      <h2 id="settingsTitle">設定</h2>
+      <p>表示する入力項目を選択します。</p>
+    </div>
+    <button class="action light" id="btnCloseSettings">閉じる</button>
+  </div>
+  <div class="modal-body">
+    <h2 class="section-title">表示項目</h2>
+    <div class="settings-list" id="fieldSettingsList"></div>
+  </div>
+</div>
+
 <div class="confirm" id="confirmBox">
   <p id="confirmText"></p>
   <div class="confirm-actions">
@@ -878,6 +881,7 @@ td.number{text-align:right}
   var STORAGE_KEY = "repair_report_presets_v1";
   var DRAFT_KEY = "repair_report_draft_v1";
   var MODE_KEY = "repair_report_mode_v1";
+  var FIELD_VISIBILITY_KEY = "repair_report_field_visibility_v1";
   var CLOUD_CONFIG_KEY = "repair_report_cloud_config_v1";
   var CLOUD_SYNC_ID_KEY = "repair_report_cloud_sync_id_v1";
   var CLOUD_PIN_KEY = "repair_report_cloud_pin_v1";
@@ -901,6 +905,71 @@ td.number{text-align:right}
   function $(id){ return document.getElementById(id); }
   function all(selector, root){ return Array.prototype.slice.call((root || document).querySelectorAll(selector)); }
   function fieldEls(){ return all("[data-label]"); }
+  function loadFieldVisibility(){
+    if(!storageOK) return {};
+    try{
+      var raw = localStorage.getItem(FIELD_VISIBILITY_KEY);
+      var parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    }catch(e){ return {}; }
+  }
+  function saveFieldVisibility(map){
+    if(storageOK) localStorage.setItem(FIELD_VISIBILITY_KEY, JSON.stringify(map));
+  }
+  function isFieldVisible(el){
+    var map = loadFieldVisibility();
+    return map[el.id] !== false;
+  }
+  function fieldMeta(){
+    var seen = {};
+    return fieldEls().filter(function(el){
+      if(!el.id || seen[el.id]) return false;
+      seen[el.id] = true;
+      return true;
+    }).map(function(el){
+      return { id: el.id, label: el.getAttribute("data-label") || el.id };
+    });
+  }
+  function applyFieldVisibility(){
+    var map = loadFieldVisibility();
+    fieldEls().forEach(function(el){
+      var hidden = map[el.id] === false;
+      el.classList.toggle("hidden-field", hidden);
+      el.disabled = hidden;
+    });
+    all(".field-row").forEach(function(row){
+      var fields = fieldEls().filter(function(el){ return row.contains(el); });
+      row.classList.toggle("hidden-field", fields.length > 0 && fields.every(function(el){ return map[el.id] === false; }));
+    });
+    all("#billBody tr").forEach(function(row){
+      var fields = fieldEls().filter(function(el){ return row.contains(el); });
+      row.classList.toggle("hidden-field", fields.length > 0 && fields.every(function(el){ return map[el.id] === false; }));
+    });
+    renderDisplayMode();
+  }
+  function renderFieldSettings(){
+    var list = $("fieldSettingsList");
+    if(!list) return;
+    var map = loadFieldVisibility();
+    list.innerHTML = "";
+    fieldMeta().forEach(function(meta){
+      var label = document.createElement("label");
+      label.className = "setting-check";
+      var input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = map[meta.id] !== false;
+      input.addEventListener("change", function(){
+        map[meta.id] = input.checked;
+        saveFieldVisibility(map);
+        applyFieldVisibility();
+      });
+      var span = document.createElement("span");
+      span.textContent = meta.label;
+      label.appendChild(input);
+      label.appendChild(span);
+      list.appendChild(label);
+    });
+  }
   function nowText(){
     var d = new Date();
     var pad = function(n){ return String(n).padStart(2,"0"); };
@@ -919,7 +988,7 @@ td.number{text-align:right}
     $("confirmBox").style.display = "block";
     function cleanup(){
       $("confirmBox").style.display = "none";
-      if($("presetModal").style.display !== "block") $("overlay").style.display = "none";
+      if($("presetModal").style.display !== "block" && $("settingsModal").style.display !== "block") $("overlay").style.display = "none";
       $("confirmOk").onclick = null;
       $("confirmCancel").onclick = null;
     }
@@ -1025,7 +1094,6 @@ td.number{text-align:right}
   }
   function setDirty(value){
     dirty = value;
-    $("draftState").textContent = dirty ? "未保存の変更あり" : "未保存の変更なし";
   }
   function collectData(){
     var data = {};
@@ -1055,7 +1123,6 @@ td.number{text-align:right}
     setDirty(true);
   }
   function syncHeader(){
-    $("caseCustomer").textContent = $("customerName").value || "未入力";
     if(!$("productModel").value && $("model").value) $("productModel").value = $("model").value;
   }
   function copyText(text){
@@ -1115,6 +1182,7 @@ td.number{text-align:right}
     var panel = activePanel();
     var items = [];
     all("[data-label]", panel).forEach(function(el){
+      if(!isFieldVisible(el)) return;
       var value = el.value;
       if(value !== "" && value !== "0"){
         items.push({ label: el.getAttribute("data-label"), value: value });
@@ -1122,12 +1190,6 @@ td.number{text-align:right}
     });
     if(currentTab === "parts" && partRows.length){
       items.push({ label: "交換部品一覧", value: partsSummary() });
-    }
-    if(currentTab === "bill"){
-      billRows.forEach(function(name, i){
-        var total = $("bill" + i + "Total");
-        if(total && total.textContent !== "0") items.push({ label: name + " 合計", value: total.textContent });
-      });
     }
     if(!items.length){
       var empty = document.createElement("div");
@@ -1179,21 +1241,12 @@ td.number{text-align:right}
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>"+name+"</td>"+
-        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+" 自拠点\" value=\"0\"></td>"+
-        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Support\" data-label=\""+name+" 後援拠点\" value=\"0\"></td>"+
-        "<td class=\"number\" id=\""+idBase+"Total\">0</td>"+
-        "<td><button class=\"copy-btn\" data-copy-bill=\""+idBase+"\">CP</button></td>";
+        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+"\" value=\"0\"></td>";
       body.appendChild(tr);
     });
   }
   function updateBillTotals(){
-    billRows.forEach(function(name, i){
-      var own = Number(fieldValue("bill"+i+"Own") || 0);
-      var support = Number(fieldValue("bill"+i+"Support") || 0);
-      var total = own + support;
-      var cell = $("bill"+i+"Total");
-      if(cell) cell.textContent = total.toLocaleString("ja-JP");
-    });
+    renderDisplayMode();
   }
   function renderParts(){
     var body = $("partsBody");
@@ -1209,6 +1262,15 @@ td.number{text-align:right}
         "<td><input type=\"number\" data-part=\"qty\" data-index=\""+i+"\" value=\""+escapeAttr(p.qty || "1")+"\"></td>";
       body.appendChild(tr);
     });
+  }
+  function openSettings(){
+    renderFieldSettings();
+    $("overlay").style.display = "block";
+    $("settingsModal").style.display = "block";
+  }
+  function closeSettings(){
+    $("settingsModal").style.display = "none";
+    if($("presetModal").style.display !== "block") $("overlay").style.display = "none";
   }
   function escapeAttr(value){
     return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
@@ -1259,7 +1321,7 @@ td.number{text-align:right}
   }
   function closeModal(){
     $("presetModal").style.display = "none";
-    $("overlay").style.display = "none";
+    if($("settingsModal").style.display !== "block") $("overlay").style.display = "none";
   }
   function savePreset(forceCopy){
     var name = $("presetName").value.trim();
@@ -1381,6 +1443,7 @@ td.number{text-align:right}
   renderBill();
   renderParts();
   updateBillTotals();
+  applyFieldVisibility();
   $("doneAt").value = nowText();
 
   document.addEventListener("input", function(ev){
@@ -1408,13 +1471,6 @@ td.number{text-align:right}
     }
   });
   document.addEventListener("click", function(ev){
-    var copyId = ev.target.getAttribute("data-copy");
-    if(copyId){ copyText(fieldValue(copyId)); return; }
-    var billId = ev.target.getAttribute("data-copy-bill");
-    if(billId){
-      copyText($(billId+"Total").textContent);
-      return;
-    }
     var loadId = ev.target.getAttribute("data-load-preset");
     if(loadId){
       var p = loadPresets().find(function(x){ return x.id === loadId; });
@@ -1468,8 +1524,11 @@ td.number{text-align:right}
   });
   $("btnOpenModal").addEventListener("click", openModal);
   $("btnCloseModal").addEventListener("click", closeModal);
+  $("btnSettings").addEventListener("click", openSettings);
+  $("btnCloseSettings").addEventListener("click", closeSettings);
   $("overlay").addEventListener("click", function(){
     if($("confirmBox").style.display === "block") return;
+    closeSettings();
     closeModal();
   });
   $("btnSavePreset").addEventListener("click", function(){ savePreset(false); });
@@ -1480,9 +1539,12 @@ td.number{text-align:right}
   $("btnDraft").addEventListener("click", saveDraft);
   $("btnLoadDraft").addEventListener("click", loadDraft);
   $("modeToggle").addEventListener("change", function(){ setMode($("modeToggle").checked, true); });
-  document.querySelector("[data-copy-parts]").addEventListener("click", function(){
-    copyText(partsSummary() || "部品行がありません");
-  });
+  var copyPartsButton = document.querySelector("[data-copy-parts]");
+  if(copyPartsButton){
+    copyPartsButton.addEventListener("click", function(){
+      copyText(partsSummary() || "部品行がありません");
+    });
+  }
   $("btnAddPart").addEventListener("click", function(){
     partRows.push({billing:"請求先1", adjust:"", number:"", name:"", qty:"1"});
     renderParts();
@@ -1492,6 +1554,7 @@ td.number{text-align:right}
     if(storageOK && dirty) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
   });
   syncHeader();
+  applyFieldVisibility();
   if(storageOK){
     var savedDraft = localStorage.getItem(DRAFT_KEY);
     if(savedDraft){
@@ -1505,3 +1568,4 @@ td.number{text-align:right}
 </script>
 </body>
 </html>
+
