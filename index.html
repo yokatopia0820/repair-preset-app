@@ -215,7 +215,24 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .tab-panel.active{display:block}
 .display-panel{display:none;max-width:1180px;margin:0 auto;background:#fff;padding:18px;border-left:5px solid #ffd2dc;border-right:5px solid #ffd2dc}
 .display-panel.active{display:block}
-.copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.copy-grid{display:grid;gap:16px}
+.copy-section{
+  display:grid;
+  gap:8px;
+}
+.copy-section h2{
+  margin:0;
+  padding:0 2px 4px;
+  color:var(--red);
+  font-size:16px;
+  font-weight:900;
+  border-bottom:2px solid #ffd2dc;
+}
+.copy-section-items{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
 .copy-card{
   border:1px solid var(--line);
   border-radius:8px;
@@ -224,6 +241,13 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
   padding:12px;
   text-align:left;
   min-height:64px;
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .15s;
+}
+.copy-card:hover{
+  background:#fff1f4;
+  border-color:#ff9aae;
+  box-shadow:0 8px 18px rgba(239,0,24,.12);
+  transform:translateY(-1px);
 }
 .copy-card strong{display:block;color:var(--red);font-size:12px;margin-bottom:5px}
 .copy-card span{display:block;line-height:1.45;word-break:break-word}
@@ -499,7 +523,7 @@ td.number{text-align:right}
   .invoice-strip{padding:14px 12px 22px}
   .tabs{gap:2px}
   .tab{min-height:44px;font-size:11px;padding:7px 2px;letter-spacing:0}
-  .copy-grid{grid-template-columns:1fr}
+  .copy-section-items{grid-template-columns:1fr}
   .field-row,.field-row.wide-label{
     grid-template-columns:1fr;
     gap:8px;
@@ -553,19 +577,19 @@ td.number{text-align:right}
       <div class="form-grid">
         <div class="field-row full">
           <label for="doneAt">完了日</label>
-          <input type="text" id="doneAt" data-label="完了日" placeholder="2026/05/14 18:28">
+          <input type="text" id="doneAt" data-label="完了日">
         </div>
         <div class="field-row full">
           <label for="customerName">お客様名</label>
-          <input type="text" id="customerName" data-label="お客様名" placeholder="富永　美保">
+          <input type="text" id="customerName" data-label="お客様名">
         </div>
         <div class="field-row full">
           <label for="model">型式</label>
-          <input type="text" id="model" data-label="型式" placeholder="BDSTX120HR">
+          <input type="text" id="model" data-label="型式">
         </div>
         <div class="field-row">
           <label for="serial">製造番号</label>
-          <input type="text" id="serial" data-label="製造番号" placeholder="2501456">
+          <input type="text" id="serial" data-label="製造番号">
         </div>
         <div class="field-row">
           <label for="color">製品色</label>
@@ -582,7 +606,7 @@ td.number{text-align:right}
         </div>
         <div class="field-row full">
           <label for="faultCode">事故処置コード</label>
-          <input type="text" id="faultCode" data-label="事故処置コード" placeholder="2HF">
+          <input type="text" id="faultCode" data-label="事故処置コード">
         </div>
         <div class="field-row">
           <label for="deliveryType">納品区分</label>
@@ -1151,21 +1175,11 @@ td.number{text-align:right}
   function summaryForPanel(panel){
     var rows = [];
     all("[data-label]", panel).forEach(function(el){
+      if(!isFieldVisible(el)) return;
       var value = el.value;
       if(value !== "") rows.push(el.getAttribute("data-label") + "：" + value);
     });
     return rows.join("\n");
-  }
-  function fullSummary(){
-    var rows = [];
-    all(".tab-panel").forEach(function(panel){
-      var text = summaryForPanel(panel);
-      if(text) rows.push("【" + panel.getAttribute("data-title") + "】\n" + text);
-    });
-    if(partRows.length){
-      rows.push("【交換部品一覧】\n" + partsSummary());
-    }
-    return rows.join("\n\n");
   }
   function partsSummary(){
     return partRows.map(function(p, i){
@@ -1175,11 +1189,7 @@ td.number{text-align:right}
   function activePanel(){
     return $("panel-" + currentTab);
   }
-  function renderDisplayMode(){
-    var grid = $("copyGrid");
-    if(!grid) return;
-    grid.innerHTML = "";
-    var panel = activePanel();
+  function valueItemsForPanel(panel){
     var items = [];
     all("[data-label]", panel).forEach(function(el){
       if(!isFieldVisible(el)) return;
@@ -1188,26 +1198,47 @@ td.number{text-align:right}
         items.push({ label: el.getAttribute("data-label"), value: value });
       }
     });
-    if(currentTab === "parts" && partRows.length){
+    if(panel.id === "panel-parts" && partRows.length){
       items.push({ label: "交換部品一覧", value: partsSummary() });
     }
-    if(!items.length){
+    return items;
+  }
+  function renderDisplayMode(){
+    var grid = $("copyGrid");
+    if(!grid) return;
+    grid.innerHTML = "";
+    var panels = ["panel-main","panel-product","panel-report","panel-parts","panel-bill"].map(function(id){ return $(id); }).filter(Boolean);
+    var hasItems = false;
+    panels.forEach(function(panel){
+      var items = valueItemsForPanel(panel);
+      if(!items.length) return;
+      hasItems = true;
+      var section = document.createElement("section");
+      section.className = "copy-section";
+      var heading = document.createElement("h2");
+      heading.textContent = panel.getAttribute("data-title");
+      var list = document.createElement("div");
+      list.className = "copy-section-items";
+      items.forEach(function(item){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "copy-card";
+        btn.innerHTML = "<strong></strong><span></span>";
+        btn.querySelector("strong").textContent = item.label;
+        btn.querySelector("span").textContent = item.value;
+        btn.addEventListener("click", function(){ copyText(item.value); });
+        list.appendChild(btn);
+      });
+      section.appendChild(heading);
+      section.appendChild(list);
+      grid.appendChild(section);
+    });
+    if(!hasItems){
       var empty = document.createElement("div");
       empty.className = "copy-empty";
       empty.textContent = "入力済みの項目はありません。編集モードで入力してください。";
       grid.appendChild(empty);
-      return;
     }
-    items.forEach(function(item){
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "copy-card";
-      btn.innerHTML = "<strong></strong><span></span>";
-      btn.querySelector("strong").textContent = item.label;
-      btn.querySelector("span").textContent = item.value;
-      btn.addEventListener("click", function(){ copyText(item.value); });
-      grid.appendChild(btn);
-    });
   }
   function setMode(editing, persist){
     document.body.classList.toggle("view-mode", !editing);
@@ -1480,7 +1511,7 @@ td.number{text-align:right}
           updateBillTotals();
           closeModal();
           toast(p.name + " を読み込みました");
-          renderDisplayMode();
+          setMode(false, true);
         });
       }
       return;
