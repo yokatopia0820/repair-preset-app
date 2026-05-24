@@ -1312,7 +1312,9 @@ td.number{text-align:right}
   function applyCurrentFormData(data){
     if(!data || typeof data !== "object") return;
     fieldEls().forEach(function(el){
-      if(Object.prototype.hasOwnProperty.call(data, el.id)) el.value = data[el.id];
+      if(Object.prototype.hasOwnProperty.call(data, el.id)){
+        el.value = el.classList.contains("money-input") && data[el.id] === "0" ? "" : data[el.id];
+      }
       else if(el.tagName === "SELECT") el.selectedIndex = 0;
       else if(el.type === "number") el.value = "";
       else el.value = "";
