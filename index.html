@@ -1587,7 +1587,7 @@ td.number{text-align:right}
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>"+name+"</td>"+
-        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+"\"></td>";
+        "<td><input class=\"money-input\" type=\"text\" inputmode=\"numeric\" id=\""+idBase+"Own\" data-label=\""+name+"\"></td>";
       body.appendChild(tr);
     });
     var detailRow = document.createElement("tr");
