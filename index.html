@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -65,6 +65,21 @@ h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
   font-weight:900;
   vertical-align:middle;
 }
+.theme-toggle{
+  position:absolute;
+  left:8px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+.theme-toggle .switch{width:46px;height:26px}
+.theme-toggle .slider:before{width:20px;height:20px}
+.theme-toggle .switch input:checked + .slider:before{transform:translateX(20px)}
 .settings-btn{
   position:absolute;
   right:8px;
@@ -473,6 +488,51 @@ td.number{text-align:right}
 }
 .bottom-bar .draft{background:#3b3b3b}
 .bottom-bar .send{background:#cfcfcf;color:#fff}
+body.dark-mode{
+  --ink:#f3f4f6;
+  --muted:#b9bec8;
+  --line:#3a3f49;
+  --field:#2b3038;
+  --panel:#1d2128;
+  --bg:#12161d;
+  --black:#f3f4f6;
+  --shadow:0 18px 50px rgba(0,0,0,.38);
+}
+body.dark-mode .casebar,
+body.dark-mode .invoice-strip,
+body.dark-mode .workspace,
+body.dark-mode .display-panel,
+body.dark-mode .modal,
+body.dark-mode .confirm,
+body.dark-mode .preset-item,
+body.dark-mode .copy-invoice,
+body.dark-mode .copy-card,
+body.dark-mode .table-wrap,
+body.dark-mode .sync-panel,
+body.dark-mode .setting-check,
+body.dark-mode .invoice-card,
+body.dark-mode .invoice-add{
+  background:var(--panel);
+  color:var(--ink);
+}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .invoice-type-label{
+  background:var(--field);
+  color:var(--ink);
+}
+body.dark-mode td,
+body.dark-mode .copy-card,
+body.dark-mode .setting-check,
+body.dark-mode .preset-item{border-color:var(--line)}
+body.dark-mode td:first-child,
+body.dark-mode label,
+body.dark-mode .preset-meta,
+body.dark-mode .modal-head p{color:var(--muted)}
+body.dark-mode .action.light{background:#303641;color:var(--ink)}
+body.dark-mode .copy-card:hover{background:#2a2025}
+body.dark-mode .bottom-bar .send{background:#565b64}
 .overlay{
   position:fixed;
   inset:0;
@@ -673,9 +733,13 @@ td.number{text-align:right}
 <div class="app-shell">
   <header class="topbar">
     <div class="hero">
+      <label class="theme-toggle" title="ダークモード">
+        <span>Dark</span>
+        <span class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></span>
+      </label>
       <div class="title-wrap">
         <div>
-          <h1>完了報告 入力プリセット <span class="version-badge">v1.1</span></h1>
+          <h1>完了報告 入力プリセット <span class="version-badge">v1.2</span></h1>
         </div>
       </div>
       <button class="settings-btn" id="btnSettings" type="button" aria-label="設定" title="設定">⚙</button>
@@ -1084,6 +1148,7 @@ td.number{text-align:right}
   var STORAGE_KEY = "repair_report_presets_v1";
   var DRAFT_KEY = "repair_report_draft_v1";
   var MODE_KEY = "repair_report_mode_v1";
+  var DARK_MODE_KEY = "repair_report_dark_mode_v1";
   var FIELD_VISIBILITY_KEY = "repair_report_field_visibility_v1";
   var CLOUD_CONFIG_KEY = "repair_report_cloud_config_v1";
   var CLOUD_SYNC_ID_KEY = "repair_report_cloud_sync_id_v1";
@@ -1574,6 +1639,11 @@ td.number{text-align:right}
     renderInvoiceStrip();
     renderDisplayMode();
   }
+  function setDarkMode(enabled, persist){
+    document.body.classList.toggle("dark-mode", enabled);
+    if($("darkModeToggle")) $("darkModeToggle").checked = enabled;
+    if(persist && storageOK) localStorage.setItem(DARK_MODE_KEY, enabled ? "1" : "0");
+  }
   function saveDraft(){
     if(storageOK) localStorage.setItem(DRAFT_KEY, JSON.stringify(collectData()));
     toast("保存しました");
@@ -1960,6 +2030,7 @@ td.number{text-align:right}
   $("btnDraft").addEventListener("click", saveDraft);
   $("btnLoadDraft").addEventListener("click", loadDraft);
   $("modeToggle").addEventListener("change", function(){ setMode($("modeToggle").checked, true); });
+  $("darkModeToggle").addEventListener("change", function(){ setDarkMode($("darkModeToggle").checked, true); });
   var copyPartsButton = document.querySelector("[data-copy-parts]");
   if(copyPartsButton){
     copyPartsButton.addEventListener("click", function(){
@@ -1976,6 +2047,7 @@ td.number{text-align:right}
   });
   syncHeader();
   applyFieldVisibility();
+  setDarkMode(storageOK && localStorage.getItem(DARK_MODE_KEY) === "1", false);
   if(storageOK){
     var savedDraft = localStorage.getItem(DRAFT_KEY);
     if(savedDraft){
