@@ -490,14 +490,27 @@ td.number{text-align:right}
 .bottom-bar .send{background:#cfcfcf;color:#fff}
 body.dark-mode{
   --ink:#f3f4f6;
-  --muted:#b9bec8;
-  --line:#3a3f49;
-  --field:#2b3038;
-  --panel:#1d2128;
-  --bg:#12161d;
+  --muted:#aab2c0;
+  --line:#333b48;
+  --field:#252c36;
+  --panel:#171c24;
+  --bg:#0f131a;
   --black:#f3f4f6;
   --shadow:0 18px 50px rgba(0,0,0,.38);
 }
+body.dark-mode .topbar{
+  background:#111722;
+  border-bottom:3px solid var(--red);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+}
+body.dark-mode .hero{background:#111722}
+body.dark-mode .version-badge{background:rgba(239,0,24,.28)}
+body.dark-mode .settings-btn,
+body.dark-mode .theme-toggle .slider{
+  background:#29313d;
+  color:#fff;
+}
+body.dark-mode .settings-btn:hover{background:#35404f}
 body.dark-mode .casebar,
 body.dark-mode .invoice-strip,
 body.dark-mode .workspace,
@@ -515,12 +528,52 @@ body.dark-mode .invoice-add{
   background:var(--panel);
   color:var(--ink);
 }
+body.dark-mode .casebar{border-bottom-color:var(--line)}
+body.dark-mode .invoice-strip{
+  background:#151a22;
+  border-bottom:1px solid var(--line);
+}
+body.dark-mode .invoice-card{
+  border-color:#5a3440;
+  background:#171c24;
+}
+body.dark-mode .invoice-card.active:after{
+  border-right-color:#5a3440;
+  border-bottom-color:#5a3440;
+  background:#171c24;
+}
+body.dark-mode .invoice-add{border-color:#394251}
+body.dark-mode .tabs{
+  background:#121720;
+  border-bottom-color:var(--red);
+}
+body.dark-mode .tab{
+  background:#313947;
+  color:#dce3ee;
+}
+body.dark-mode .tab.active{
+  background:var(--red);
+  color:#fff;
+}
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea,
 body.dark-mode .invoice-type-label{
   background:var(--field);
   color:var(--ink);
+}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder{color:#737d8c}
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus{
+  background:#202733;
+  outline-color:#ff7d91;
+  box-shadow:0 0 0 4px rgba(239,0,24,.16);
+}
+body.dark-mode th{
+  background:#3a4351;
+  color:#f5f7fb;
 }
 body.dark-mode td,
 body.dark-mode .copy-card,
@@ -531,7 +584,14 @@ body.dark-mode label,
 body.dark-mode .preset-meta,
 body.dark-mode .modal-head p{color:var(--muted)}
 body.dark-mode .action.light{background:#303641;color:var(--ink)}
+body.dark-mode .action.danger{background:#3a2026;color:#ffb8c3;border-color:#6d303d}
+body.dark-mode .mode-control{background:#171c24;border-color:var(--line);color:var(--ink)}
+body.dark-mode .section-title,
+body.dark-mode .copy-section h2{color:#ff4b62}
 body.dark-mode .copy-card:hover{background:#2a2025}
+body.dark-mode .parts-empty,
+body.dark-mode .empty{background:#151a22;border-color:var(--line);color:var(--muted)}
+body.dark-mode .bottom-bar .draft{background:#151a22}
 body.dark-mode .bottom-bar .send{background:#565b64}
 .overlay{
   position:fixed;
@@ -739,7 +799,7 @@ body.dark-mode .bottom-bar .send{background:#565b64}
       </label>
       <div class="title-wrap">
         <div>
-          <h1>完了報告 入力プリセット <span class="version-badge">v1.2</span></h1>
+          <h1>完了報告 入力プリセット <span class="version-badge">v1.3</span></h1>
         </div>
       </div>
       <button class="settings-btn" id="btnSettings" type="button" aria-label="設定" title="設定">⚙</button>
