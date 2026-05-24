@@ -431,6 +431,17 @@ td.number{text-align:right}
   margin:22px 0;
 }
 .parts-actions h2{margin:0;text-align:center;font-size:18px}
+.part-delete{
+  border:1px solid #ffc4cc;
+  border-radius:6px;
+  min-height:36px;
+  padding:7px 10px;
+  background:#fff0f2;
+  color:var(--red-dark);
+  font-weight:900;
+  white-space:nowrap;
+}
+.part-delete:hover{background:#ffe3e8}
 .bottom-bar{
   position:fixed;
   left:0;
@@ -911,6 +922,7 @@ td.number{text-align:right}
               <th>部品番号</th>
               <th>部品名</th>
               <th>数量</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody id="partsBody"></tbody>
@@ -1302,7 +1314,7 @@ td.number{text-align:right}
     fieldEls().forEach(function(el){
       if(Object.prototype.hasOwnProperty.call(data, el.id)) el.value = data[el.id];
       else if(el.tagName === "SELECT") el.selectedIndex = 0;
-      else if(el.type === "number") el.value = "0";
+      else if(el.type === "number") el.value = "";
       else el.value = "";
     });
     partRows = Array.isArray(data.__parts) ? data.__parts.slice() : [];
@@ -1573,7 +1585,7 @@ td.number{text-align:right}
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>"+name+"</td>"+
-        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+"\" value=\"0\"></td>";
+        "<td><input class=\"money-input\" type=\"number\" id=\""+idBase+"Own\" data-label=\""+name+"\"></td>";
       body.appendChild(tr);
     });
     var detailRow = document.createElement("tr");
@@ -1596,9 +1608,18 @@ td.number{text-align:right}
         "<td><input data-part=\"adjust\" data-index=\""+i+"\" value=\""+escapeAttr(p.adjust || "")+"\"></td>"+
         "<td><input data-part=\"number\" data-index=\""+i+"\" value=\""+escapeAttr(p.number || "")+"\"></td>"+
         "<td><input data-part=\"name\" data-index=\""+i+"\" value=\""+escapeAttr(p.name || "")+"\"></td>"+
-        "<td><input type=\"number\" data-part=\"qty\" data-index=\""+i+"\" value=\""+escapeAttr(p.qty || "1")+"\"></td>";
+        "<td><input type=\"number\" data-part=\"qty\" data-index=\""+i+"\" value=\""+escapeAttr(p.qty || "1")+"\"></td>"+
+        "<td><button class=\"part-delete\" type=\"button\" data-delete-part=\""+i+"\">削除</button></td>";
       body.appendChild(tr);
     });
+  }
+  function deletePart(index){
+    if(!partRows[index]) return;
+    partRows.splice(index, 1);
+    renderParts();
+    setDirty(true);
+    renderDisplayMode();
+    toast("部品を削除しました");
   }
   function openSettings(){
     renderFieldSettings();
@@ -1847,6 +1868,11 @@ td.number{text-align:right}
     }
   });
   document.addEventListener("click", function(ev){
+    var deletePartIndex = ev.target.getAttribute("data-delete-part");
+    if(deletePartIndex !== null){
+      deletePart(Number(deletePartIndex));
+      return;
+    }
     var deleteInvoiceIndex = ev.target.getAttribute("data-delete-invoice");
     if(deleteInvoiceIndex){
       deleteInvoice(Number(deleteInvoiceIndex));
