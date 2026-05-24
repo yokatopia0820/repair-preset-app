@@ -53,6 +53,18 @@ button{cursor:pointer}
 .title-wrap{display:flex;align-items:center;justify-content:center;min-width:0}
 .back,.subtitle,.hero-actions{display:none}
 h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
+.version-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-left:8px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  vertical-align:middle;
+}
 .settings-btn{
   position:absolute;
   right:8px;
@@ -663,7 +675,7 @@ td.number{text-align:right}
     <div class="hero">
       <div class="title-wrap">
         <div>
-          <h1>完了報告 入力プリセット</h1>
+          <h1>完了報告 入力プリセット <span class="version-badge">v1.1</span></h1>
         </div>
       </div>
       <button class="settings-btn" id="btnSettings" type="button" aria-label="設定" title="設定">⚙</button>
