@@ -24,6 +24,7 @@
 }
 *{box-sizing:border-box}
 html{height:100%}
+html,body{max-width:100%;overflow-x:hidden}
 body{
   min-height:100%;
   margin:0;
@@ -50,7 +51,7 @@ button{cursor:pointer}
   padding:10px 14px;
   position:relative;
 }
-.title-wrap{display:flex;align-items:center;justify-content:center;min-width:0}
+.title-wrap{display:flex;align-items:center;justify-content:center;min-width:0;max-width:100%}
 .back,.subtitle,.hero-actions{display:none}
 h1{margin:0;font-size:18px;font-weight:900;white-space:nowrap}
 .version-badge{
@@ -765,13 +766,24 @@ body.dark-mode .bottom-bar .send{background:#565b64}
 }
 @media (max-width:520px){
   .statusline{font-size:11px}
-  h1{font-size:18px}
-  h1{font-size:16px}
-  .hero{padding:8px 10px}
+  h1{font-size:14px}
+  .version-badge{font-size:10px;margin-left:5px;padding:2px 6px}
+  .theme-toggle{left:6px}
+  .theme-toggle span:first-child{display:none}
+  .settings-btn{right:6px;width:34px;height:34px}
+  .hero{padding:8px 44px}
   .casebar{padding:10px 12px}
   .manager{gap:8px}
   .mode-control{width:100%;justify-content:space-between}
-  .invoice-strip{padding:14px 12px 22px}
+  .invoice-strip{
+    padding:14px 12px 26px;
+    flex-wrap:wrap;
+    overflow:visible;
+  }
+  .invoice-card,.invoice-add{
+    min-width:0;
+    flex:1 1 100%;
+  }
   .tabs{gap:2px}
   .tab{min-height:44px;font-size:11px;padding:7px 2px;letter-spacing:0}
   .copy-section-items{grid-template-columns:1fr}
@@ -786,6 +798,47 @@ body.dark-mode .bottom-bar .send{background:#565b64}
     grid-template-columns:minmax(78px,96px) minmax(0,1fr);
   }
   .short-code{max-width:96px}
+  .table-wrap{overflow:visible}
+  table{min-width:0}
+  th,td{padding:9px 10px}
+  .bill-table th:first-child,.bill-table td:first-child{width:44%}
+  .bill-table th:last-child,.bill-table td:last-child{width:56%}
+  .parts-table{border-collapse:separate;border-spacing:0 10px}
+  .parts-table thead{display:none}
+  .parts-table,
+  .parts-table tbody,
+  .parts-table tr,
+  .parts-table td{display:block;width:100%}
+  .parts-table tr{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px;
+    background:var(--panel);
+  }
+  .parts-table td{
+    border:0;
+    display:grid;
+    grid-template-columns:92px minmax(0,1fr);
+    gap:8px;
+    align-items:center;
+    padding:6px 2px;
+  }
+  .parts-table td:before{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:900;
+  }
+  .parts-table td:nth-child(1):before{content:"請求先"}
+  .parts-table td:nth-child(2):before{content:"調整手直し"}
+  .parts-table td:nth-child(3):before{content:"部品番号"}
+  .parts-table td:nth-child(4):before{content:"部品名"}
+  .parts-table td:nth-child(5):before{content:"数量"}
+  .parts-table td:nth-child(6):before{content:"操作"}
+  .parts-actions{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .parts-actions h2{order:-1}
   .bottom-bar{min-height:64px}
 }
 </style>
@@ -800,7 +853,7 @@ body.dark-mode .bottom-bar .send{background:#565b64}
       </label>
       <div class="title-wrap">
         <div>
-          <h1>完了報告 入力プリセット <span class="version-badge">v1.4</span></h1>
+          <h1>完了報告 入力プリセット <span class="version-badge">v1.5</span></h1>
         </div>
       </div>
       <button class="settings-btn" id="btnSettings" type="button" aria-label="設定" title="設定">⚙</button>
@@ -1051,7 +1104,7 @@ body.dark-mode .bottom-bar .send{background:#565b64}
 
     <section class="tab-panel" id="panel-parts" data-title="交換部品">
       <div class="table-wrap">
-        <table>
+        <table class="parts-table">
           <thead>
             <tr>
               <th>請求先</th>
